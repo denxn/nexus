@@ -1,20 +1,7 @@
 import { z } from "zod";
-import { romeLocalToDate } from "@/lib/time";
-
-const blankToUndefined = (v: unknown) => (v === "" || v === null ? undefined : v);
+import { blankToUndefined, decimalComma, occurredAtField as occurredAt } from "@/lib/forms";
 
 const label = z.preprocess(blankToUndefined, z.string().max(80).optional());
-
-// A datetime-local string is Rome wall time; anything else (ISO with offset) goes to Date as-is.
-const LOCAL_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
-const occurredAt = z.preprocess((v) => {
-  const x = blankToUndefined(v);
-  return typeof x === "string" && LOCAL_DATETIME.test(x) ? romeLocalToDate(x) : x;
-}, z.coerce.date({ error: "Enter a valid date and time" }).optional());
-
-// Italian keypads only offer a decimal comma: "7,5" means 7.5.
-const decimalComma = (v: unknown) =>
-  typeof v === "string" && /^\s*\d*,\d+\s*$/.test(v) ? v.replace(",", ".") : v;
 
 const value = (min: number, max: number, integer = false) => {
   const base = z.coerce.number({ error: "Enter a number" });
