@@ -49,3 +49,92 @@ model Target {
 
   @@unique([type, period])
 }
+
+enum GoalKind {
+  MANUAL
+  MEASURED
+}
+
+enum GoalStatus {
+  ACTIVE
+  DONE
+  PAUSED
+}
+
+enum ProblemStatus {
+  ACTIVE
+  IMPROVING
+  SOLVED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Goal {
+  id           String      @id @default(cuid())
+  title        String
+  category     String?
+  deadline     String? // day key YYYY-MM-DD (Rome)
+  status       GoalStatus  @default(ACTIVE)
+  kind         GoalKind
+  progress     Int? // MANUAL: 0..100
+  measuredType EntryType? // MEASURED
+  targetValue  Float? // MEASURED, in Entry units
+  startDate    String? // MEASURED, day key
+  createdAt    DateTime    @default(now())
+  todos        Todo[]
+}
+
+model Problem {
+  id          String              @id @default(cuid())
+  title       String
+  trigger     String?
+  counterPlan String?
+  severity    Int
+  status      ProblemStatus       @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  occurrences ProblemOccurrence[]
+  todos       Todo[]
+}
+
+model ProblemOccurrence {
+  id         String   @id @default(cuid())
+  problemId  String
+  problem    Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  occurredAt DateTime
+  note       String?
+
+  @@index([problemId, occurredAt])
+}
+
+model Todo {
+  id        String    @id @default(cuid())
+  title     String
+  dueDate   String? // day key
+  priority  Priority  @default(MEDIUM)
+  done      Boolean   @default(false)
+  doneAt    DateTime?
+  goalId    String?
+  goal      Goal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  problemId String?
+  problem   Problem?  @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+
+  @@index([dueDate])
+}
+
+model Event {
+  id         String    @id @default(cuid())
+  title      String
+  startsAt   DateTime
+  endsAt     DateTime?
+  source     Source    @default(MANUAL)
+  externalId String?
+  createdAt  DateTime  @default(now())
+
+  @@unique([source, externalId])
+  @@index([startsAt])
+}
