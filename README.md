@@ -1,6 +1,6 @@
 # Nexus
 
-A personal life dashboard: log workouts, study, sleep, meals and mood, then see them as daily stat cards and one combined Life Timeline. Stage 1 of the plan in `docs/superpowers/`.
+A personal life dashboard: log workouts, study, sleep, meals and mood, then see them as daily stat cards and one combined Life Timeline. Specs and plans live in `docs/superpowers/`.
 
 **Stack:** Next.js (App Router), Prisma, Postgres (Neon), Recharts, Zod, Vitest, Playwright.
 
@@ -38,6 +38,9 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
 
 ## Using it
 
+- **Plan** (`/plan`) has three tabs: Goals (manual, or measured from your logs), Problems (with occurrences) and To-do. `/goals` and `/flaws` redirect there.
+- **Calendar** (`/calendar`) shows a month grid and a day agenda with your events, to-dos due and what you logged. Add events with **+ Add**.
+- The dashboard shows Goals, This Week and a mini Calendar under the timeline.
 - Press **N** (or tap **+**) to log an entry. Entries can be edited or deleted from Recent Activity.
 - The **When** field defaults to now (Rome time); change it to back-date an entry, for example last night's sleep. Decimal commas work (`7,5`).
 - Days are cut in the Europe/Rome timezone. A sleep entry counts for the day you wake up.
@@ -60,4 +63,4 @@ npx playwright test
 
 ## Stages
 
-Stage 1 (this) covers login, quick-log, stat cards and the Life Timeline. Goals, Problems, To-do and the Calendar come in Stage 2; the correlation view and AI daily brief in Stage 3.
+Stage 1 covers login, quick-log, stat cards and the Life Timeline. Stage 2 adds Plan (Goals, Problems, To-do), the Calendar and the This Week grid. The correlation view and AI daily brief come in Stage 3.
