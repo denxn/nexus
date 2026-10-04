@@ -1,12 +1,19 @@
+import { GoalsCard } from "@/components/GoalsCard";
 import { LifeTimeline } from "@/components/LifeTimeline";
+import { MiniCalendar } from "@/components/MiniCalendar";
 import { RecentActivity } from "@/components/RecentActivity";
 import { StatCard } from "@/components/StatCard";
+import { WeekGridCard } from "@/components/WeekGridCard";
+import dash from "@/components/dashboard.module.css";
 import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
+import { getCalendarData, getGoals } from "@/lib/plan/queries";
+import { weekGrid } from "@/lib/plan/weekGrid";
 import { parseRange } from "@/lib/range";
 import { getTargets } from "@/lib/targets";
 import { toTimelineSeries } from "@/lib/timeline";
+import { dayKey, monthKeyOf } from "@/lib/time";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
@@ -30,10 +37,13 @@ export default async function DashboardPage({
   searchParams: Promise<{ range?: string | string[] }>;
 }) {
   const range = parseRange((await searchParams).range);
-  const [stats, targets, recent] = await Promise.all([
+  const today = dayKey(new Date());
+  const [stats, targets, recent, goals, calendar] = await Promise.all([
     getDailyStats(range),
     getTargets(),
     getRecentEntries(8),
+    getGoals(),
+    getCalendarData(monthKeyOf(today), today),
   ]);
   const cards = summarizeCards(stats, targets);
   const series = toTimelineSeries(stats, targets);
@@ -81,6 +91,12 @@ export default async function DashboardPage({
       </div>
 
       <LifeTimeline data={series} range={range} />
+
+      <div className={dash.row}>
+        <GoalsCard goals={goals} />
+        <WeekGridCard rows={weekGrid(stats, targets, today)} />
+        <MiniCalendar today={today} markers={calendar.markers} agenda={calendar.agenda} />
+      </div>
 
       <RecentActivity entries={recent} />
     </div>

@@ -1,0 +1,123 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+  gap: 14px;
+}
+
+.card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.link {
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.goals {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goalTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.goalTop span:last-child {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  margin-top: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: 70px repeat(7, minmax(0, 1fr));
+  gap: 8px 4px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.week .dayHead {
+  text-align: center;
+  color: var(--muted);
+}
+
+.week .label {
+  color: var(--muted);
+}
+
+.dot {
+  justify-self: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0.35;
+}
+
+.dot.partial {
+  opacity: 0.8;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+
+.dot.met {
+  opacity: 1;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.dot.future {
+  opacity: 0.15;
+}
+
+.agenda {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.agenda time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-right: 8px;
+}
