@@ -13,6 +13,7 @@ import { createEntry, updateEntry } from "@/app/actions/entries";
 import { initialActionState } from "@/lib/action-state";
 import { ENTRY_TYPES, typeMeta, type EntryRow, type EntryTypeName } from "@/lib/entries/meta";
 import { shouldOpenQuickLog } from "@/lib/hotkey";
+import { toRomeLocalInput } from "@/lib/time";
 import styles from "./QuickLog.module.css";
 
 type Ctx = { openNew: () => void; openEdit: (entry: EntryRow) => void };
@@ -85,6 +86,11 @@ function LogForm({ entry, onDone }: { entry: EntryRow | null; onDone: () => void
     (state.values?.type as EntryTypeName | undefined) ?? entry?.type ?? "STUDY",
   );
 
+  // Prefilled once per open: now for a new entry, the entry's own time when editing.
+  const [initialWhen] = useState(() =>
+    toRomeLocalInput(entry ? new Date(entry.occurredAt) : new Date()),
+  );
+
   useEffect(() => {
     if (state.ok) onDone();
   }, [state.ok, onDone]);
@@ -136,6 +142,18 @@ function LogForm({ entry, onDone }: { entry: EntryRow | null; onDone: () => void
           aria-invalid={!!err.label}
         />
         {err.label && <em role="alert">{err.label}</em>}
+      </label>
+
+      <label className={styles.field}>
+        <span>When (Rome time)</span>
+        <input
+          name="occurredAt"
+          type="datetime-local"
+          required
+          defaultValue={state.values?.occurredAt ?? initialWhen}
+          aria-invalid={!!err.occurredAt}
+        />
+        {err.occurredAt && <em role="alert">{err.occurredAt}</em>}
       </label>
 
       {(err.form || err.type) && (

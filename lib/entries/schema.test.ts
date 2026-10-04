@@ -56,6 +56,36 @@ describe("entryInputSchema", () => {
     expect(ok({ type: "STUDY", value: 30, label: "x".repeat(81) })).toBe(false);
   });
 
+  test("accepts a decimal comma (Italian keypads)", () => {
+    const r = entryInputSchema.safeParse({ type: "SLEEP", value: "7,5" });
+    expect(r.success && r.data.value).toBe(7.5);
+  });
+
+  test("still rejects junk with commas", () => {
+    expect(ok({ type: "SLEEP", value: "7,5,2" })).toBe(false);
+    expect(ok({ type: "SLEEP", value: "," })).toBe(false);
+  });
+
+  test("reads a datetime-local occurredAt as Rome time, not server time", () => {
+    const r = entryInputSchema.safeParse({
+      type: "STUDY",
+      value: 30,
+      occurredAt: "2026-10-04T23:30",
+    });
+    expect(r.success && r.data.occurredAt?.toISOString()).toBe(
+      "2026-10-04T21:30:00.000Z",
+    );
+  });
+
+  test("rejects an unparseable occurredAt", () => {
+    expect(ok({ type: "STUDY", value: 30, occurredAt: "garbage" })).toBe(false);
+  });
+
+  test("a blank occurredAt means now (undefined)", () => {
+    const r = entryInputSchema.safeParse({ type: "STUDY", value: 30, occurredAt: "" });
+    expect(r.success && r.data.occurredAt).toBeUndefined();
+  });
+
   test("rejects an unknown type", () => {
     expect(ok({ type: "YOGA", value: 30 })).toBe(false);
   });

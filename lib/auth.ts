@@ -28,6 +28,11 @@ export async function createSession(): Promise<string> {
     .sign(key);
 }
 
+/** Throws unless the token is a valid session; for guarding Server Actions themselves. */
+export async function assertAuthed(token: string | undefined): Promise<void> {
+  if (!(await verifySession(token))) throw new Error("Unauthorized");
+}
+
 export async function verifySession(token: string | undefined): Promise<boolean> {
   const key = secretKey();
   if (!token || !key) return false;

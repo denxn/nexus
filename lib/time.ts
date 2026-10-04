@@ -15,6 +15,46 @@ export function dayKey(d: Date): string {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+const wallFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+function wallParts(d: Date) {
+  return Object.fromEntries(
+    wallFormatter.formatToParts(d).map((p) => [p.type, Number(p.value)]),
+  ) as Record<"year" | "month" | "day" | "hour" | "minute", number>;
+}
+
+/** Rome's UTC offset in milliseconds at the given instant. */
+function romeOffsetMs(d: Date): number {
+  const p = wallParts(d);
+  const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute);
+  return asUtc - Math.floor(d.getTime() / 60000) * 60000;
+}
+
+/** An instant formatted as Rome wall time for a datetime-local input: "YYYY-MM-DDTHH:mm". */
+export function toRomeLocalInput(d: Date): string {
+  const p = wallParts(d);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${p.year}-${two(p.month)}-${two(p.day)}T${two(p.hour)}:${two(p.minute)}`;
+}
+
+/** Reads "YYYY-MM-DDTHH:mm" as Rome wall time, whatever the server's own timezone is. */
+export function romeLocalToDate(local: string): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(local);
+  if (!m) return new Date(NaN);
+  const [y, mo, d, h, mi] = m.slice(1).map(Number);
+  const guess = Date.UTC(y, mo - 1, d, h, mi);
+  const first = guess - romeOffsetMs(new Date(guess));
+  return new Date(guess - romeOffsetMs(new Date(first)));
+}
+
 function parseKey(key: string): Date {
   const [y, m, d] = key.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d));

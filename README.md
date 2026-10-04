@@ -39,6 +39,7 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
 ## Using it
 
 - Press **N** (or tap **+**) to log an entry. Entries can be edited or deleted from Recent Activity.
+- The **When** field defaults to now (Rome time); change it to back-date an entry, for example last night's sleep. Decimal commas work (`7,5`).
 - Days are cut in the Europe/Rome timezone. A sleep entry counts for the day you wake up.
 - Default daily targets: study 4 h, sleep 8 h, calories 2,800, workouts 4 per week.
 

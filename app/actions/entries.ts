@@ -5,6 +5,8 @@ import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { prisma } from "@/lib/db";
 import { entryInputSchema } from "@/lib/entries/schema";
+import { withSaveErrors } from "@/lib/entries/save";
+import { requireSession } from "@/lib/require-session";
 
 function readForm(formData: FormData): Record<string, string> {
   const values: Record<string, string> = {};
@@ -14,8 +16,7 @@ function readForm(formData: FormData): Record<string, string> {
   return values;
 }
 
-function parse(formData: FormData) {
-  const values = readForm(formData);
+function parse(values: Record<string, string>) {
   const result = entryInputSchema.safeParse(values);
   if (result.success) return { data: result.data };
   const fieldErrors = z.flattenError(result.error).fieldErrors as Record<
@@ -34,14 +35,18 @@ export async function createEntry(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = parse(formData);
+  await requireSession();
+  const values = readForm(formData);
+  const parsed = parse(values);
   if (!parsed.data) return parsed.state;
   const { type, value, label, occurredAt } = parsed.data;
-  await prisma.entry.create({
-    data: { type, value, label, occurredAt: occurredAt ?? new Date() },
+  const state = await withSaveErrors(values, async () => {
+    await prisma.entry.create({
+      data: { type, value, label, occurredAt: occurredAt ?? new Date() },
+    });
   });
-  revalidatePath("/");
-  return { ok: true };
+  if (state.ok) revalidatePath("/");
+  return state;
 }
 
 export async function updateEntry(
@@ -49,18 +54,24 @@ export async function updateEntry(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = parse(formData);
+  await requireSession();
+  const values = readForm(formData);
+  const parsed = parse(values);
   if (!parsed.data) return parsed.state;
   const { type, value, label, occurredAt } = parsed.data;
-  await prisma.entry.update({
-    where: { id },
-    data: { type, value, label: label ?? null, ...(occurredAt && { occurredAt }) },
+  const state = await withSaveErrors(values, async () => {
+    await prisma.entry.update({
+      where: { id },
+      data: { type, value, label: label ?? null, ...(occurredAt && { occurredAt }) },
+    });
   });
-  revalidatePath("/");
-  return { ok: true };
+  if (state.ok) revalidatePath("/");
+  return state;
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  await prisma.entry.delete({ where: { id } });
+  await requireSession();
+  // deleteMany so an entry that is already gone is not an error.
+  await prisma.entry.deleteMany({ where: { id } });
   revalidatePath("/");
 }

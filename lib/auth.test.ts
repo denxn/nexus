@@ -1,6 +1,6 @@
 import { SignJWT } from "jose";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { checkPassword, createSession, verifySession } from "./auth";
+import { assertAuthed, checkPassword, createSession, verifySession } from "./auth";
 
 const SECRET = "test-secret-test-secret-test-secret!";
 
@@ -58,6 +58,15 @@ describe("sessions", () => {
     const token = await createSession();
     process.env.SESSION_SECRET = "another-secret-another-secret-another!";
     expect(await verifySession(token)).toBe(false);
+  });
+
+  test("assertAuthed resolves for a valid token", async () => {
+    await expect(assertAuthed(await createSession())).resolves.toBeUndefined();
+  });
+
+  test("assertAuthed rejects for a missing or invalid token", async () => {
+    await expect(assertAuthed(undefined)).rejects.toThrow("Unauthorized");
+    await expect(assertAuthed("not-a-token")).rejects.toThrow("Unauthorized");
   });
 
   test("a missing token fails", async () => {
