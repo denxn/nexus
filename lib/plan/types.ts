@@ -37,3 +37,16 @@ export type TodoView = {
   problemId: string | null;
   problemTitle: string | null;
 };
+
+export type EventView = {
+  id: string;
+  title: string;
+  startsAt: string; // ISO
+  endsAt: string | null; // ISO
+};
+
+export type DayAgendaData = {
+  events: EventView[];
+  todos: { id: string; title: string; done: boolean; priority: "LOW" | "MEDIUM" | "HIGH" }[];
+  logged: { type: string; text: string }[];
+};

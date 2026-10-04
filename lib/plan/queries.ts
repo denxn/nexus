@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import type { EntryLike } from "@/lib/stats";
-import { addDays, dayKey } from "@/lib/time";
+import { addDays, dayKey, monthMatrix } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
-import type { GoalView, ProblemView, TodoView } from "./types";
+import { buildMarkers, summarizeDay } from "./calendar";
+import type { DayAgendaData, GoalView, ProblemView, TodoView } from "./types";
 
 export async function getGoals(): Promise<GoalView[]> {
   const goals = await prisma.goal.findMany({ orderBy: { createdAt: "desc" } });
@@ -110,4 +111,45 @@ export async function getGoalAndProblemOptions() {
     prisma.problem.findMany({ where: { status: { not: "SOLVED" } }, select: { id: true, title: true }, orderBy: { createdAt: "desc" } }),
   ]);
   return { goals, problems };
+}
+
+/** Markers for every cell of the month grid, plus the agenda for the selected day. */
+export async function getCalendarData(month: string, day: string) {
+  const days = monthMatrix(month).flat().map((c) => c.day);
+  const first = days[0] < day ? days[0] : day;
+  const last = days[days.length - 1] > day ? days[days.length - 1] : day;
+  // Pad each side so DST offsets cannot drop rows; everything is re-filtered by Rome day below.
+  const from = new Date(`${addDays(first, -1)}T00:00:00Z`);
+  const to = new Date(`${addDays(last, 2)}T00:00:00Z`);
+
+  const [events, todos, entries] = await Promise.all([
+    prisma.event.findMany({ where: { startsAt: { gte: from, lt: to } }, orderBy: { startsAt: "asc" } }),
+    prisma.todo.findMany({ where: { dueDate: { gte: first, lte: last } }, orderBy: { createdAt: "asc" } }),
+    prisma.entry.findMany({
+      where: { occurredAt: { gte: from, lt: to } },
+      select: { type: true, value: true, occurredAt: true },
+    }),
+  ]);
+  const inRange = (d: Date) => {
+    const k = dayKey(d);
+    return k >= first && k <= last;
+  };
+  const evs = events.filter((e) => inRange(e.startsAt));
+  const ents = entries.filter((e) => inRange(e.occurredAt));
+
+  const agenda: DayAgendaData = {
+    events: evs
+      .filter((e) => dayKey(e.startsAt) === day)
+      .map((e) => ({
+        id: e.id,
+        title: e.title,
+        startsAt: e.startsAt.toISOString(),
+        endsAt: e.endsAt?.toISOString() ?? null,
+      })),
+    todos: todos
+      .filter((t) => t.dueDate === day)
+      .map((t) => ({ id: t.id, title: t.title, done: t.done, priority: t.priority })),
+    logged: summarizeDay(day, ents),
+  };
+  return { markers: buildMarkers(days, evs, todos, ents), agenda };
 }
