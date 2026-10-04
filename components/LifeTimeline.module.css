@@ -1,0 +1,110 @@
+.card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.ranges {
+  display: flex;
+  gap: 4px;
+}
+
+.ranges a {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ranges a.rangeOn {
+  color: var(--text);
+  background: rgba(61, 169, 255, 0.14);
+  border-color: rgba(61, 169, 255, 0.4);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.legend button.off {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.chart :global(.recharts-line-curve) {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+}
+
+.tip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: #0d1424;
+  font-size: 13px;
+}
+
+.tipRow {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.tipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.tipVal {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,9 +1,12 @@
+import { LifeTimeline } from "@/components/LifeTimeline";
 import { RecentActivity } from "@/components/RecentActivity";
 import { StatCard } from "@/components/StatCard";
 import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
+import { parseRange } from "@/lib/range";
 import { getTargets } from "@/lib/targets";
+import { toTimelineSeries } from "@/lib/timeline";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
@@ -21,13 +24,19 @@ function greeting(): string {
   return "Good evening";
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string | string[] }>;
+}) {
+  const range = parseRange((await searchParams).range);
   const [stats, targets, recent] = await Promise.all([
-    getDailyStats(7),
+    getDailyStats(range),
     getTargets(),
     getRecentEntries(8),
   ]);
   const cards = summarizeCards(stats, targets);
+  const series = toTimelineSeries(stats, targets);
 
   return (
     <div className={styles.page}>
@@ -70,6 +79,8 @@ export default async function DashboardPage() {
           color="var(--c-calories)"
         />
       </div>
+
+      <LifeTimeline data={series} range={range} />
 
       <RecentActivity entries={recent} />
     </div>
