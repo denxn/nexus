@@ -1,4 +1,6 @@
+import { RecentActivity } from "@/components/RecentActivity";
 import { StatCard } from "@/components/StatCard";
+import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
 import { getTargets } from "@/lib/targets";
@@ -20,7 +22,11 @@ function greeting(): string {
 }
 
 export default async function DashboardPage() {
-  const [stats, targets] = await Promise.all([getDailyStats(7), getTargets()]);
+  const [stats, targets, recent] = await Promise.all([
+    getDailyStats(7),
+    getTargets(),
+    getRecentEntries(8),
+  ]);
   const cards = summarizeCards(stats, targets);
 
   return (
@@ -64,6 +70,8 @@ export default async function DashboardPage() {
           color="var(--c-calories)"
         />
       </div>
+
+      <RecentActivity entries={recent} />
     </div>
   );
 }

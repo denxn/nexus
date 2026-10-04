@@ -14,3 +14,20 @@ export function formatHours(totalMin: number): string {
 export function formatKcal(kcal: number): string {
   return Math.round(kcal).toLocaleString("en-US");
 }
+
+/** Human display of an entry's value, by entry type. */
+export function formatEntryValue(type: string, value: number): string {
+  switch (type) {
+    case "WORKOUT":
+    case "STUDY":
+      return formatDuration(value);
+    case "SLEEP":
+      return `${Number.isInteger(value) ? value : value.toFixed(1)} h`;
+    case "MEAL":
+      return `${formatKcal(value)} kcal`;
+    case "MOOD":
+      return `${value}/10`;
+    default:
+      return String(value);
+  }
+}
