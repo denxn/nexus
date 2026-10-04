@@ -80,3 +80,55 @@ export function weekStartKey(key: string): string {
 export function rangeKeys(endKey: string, days: number): string[] {
   return Array.from({ length: days }, (_, i) => addDays(endKey, i - (days - 1)));
 }
+
+/** True only for a real calendar date written as "YYYY-MM-DD". */
+export function isDayKey(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  return toKey(parseKey(s)) === s;
+}
+
+/** "2026-10-04" -> "2026-10". */
+export function monthKeyOf(day: string): string {
+  return day.slice(0, 7);
+}
+
+export function addMonths(month: string, n: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const index = y * 12 + (m - 1) + n;
+  const year = Math.floor(index / 12);
+  return `${year}-${String((index % 12) + 1).padStart(2, "0")}`;
+}
+
+/** Monday-first weeks covering the month; cells outside the month have inMonth false. */
+export function monthMatrix(month: string): { day: string; inMonth: boolean }[][] {
+  const first = `${month}-01`;
+  const next = `${addMonths(month, 1)}-01`;
+  const lastDay = addDays(next, -1);
+  const start = weekStartKey(first);
+  const weeks: { day: string; inMonth: boolean }[][] = [];
+  for (let cursor = start; cursor <= lastDay; cursor = addDays(cursor, 7)) {
+    weeks.push(
+      Array.from({ length: 7 }, (_, i) => {
+        const day = addDays(cursor, i);
+        return { day, inMonth: monthKeyOf(day) === month };
+      }),
+    );
+  }
+  return weeks;
+}
+
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+/** Valid "YYYY-MM" from a search param, else the current Rome month. */
+export function parseMonth(v: string | string[] | undefined): string {
+  const raw = first(v);
+  return raw && /^\d{4}-(0[1-9]|1[0-2])$/.test(raw)
+    ? raw
+    : monthKeyOf(dayKey(new Date()));
+}
+
+/** A real day key from a search param, else null. */
+export function parseDay(v: string | string[] | undefined): string | null {
+  const raw = first(v);
+  return raw && isDayKey(raw) ? raw : null;
+}
