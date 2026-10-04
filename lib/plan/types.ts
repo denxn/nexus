@@ -14,3 +14,14 @@ export type GoalView = {
   pct: number; // whole number, uncapped
   overdue: boolean;
 };
+
+export type ProblemView = {
+  id: string;
+  title: string;
+  trigger: string | null;
+  counterPlan: string | null;
+  severity: number;
+  status: "ACTIVE" | "IMPROVING" | "SOLVED";
+  occurrenceCount: number;
+  occurrences: { id: string; occurredAt: string; note: string | null }[]; // newest first, latest 10
+};

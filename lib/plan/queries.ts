@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import type { EntryLike } from "@/lib/stats";
 import { addDays, dayKey } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
-import type { GoalView } from "./types";
+import type { GoalView, ProblemView } from "./types";
 
 export async function getGoals(): Promise<GoalView[]> {
   const goals = await prisma.goal.findMany({ orderBy: { createdAt: "desc" } });
@@ -46,4 +46,38 @@ export async function getGoals(): Promise<GoalView[]> {
       overdue: g.status === "ACTIVE" && g.deadline !== null && g.deadline < today,
     };
   });
+}
+
+const STATUS_RANK = { ACTIVE: 0, IMPROVING: 1, SOLVED: 2 } as const;
+
+export async function getProblems(): Promise<ProblemView[]> {
+  const rows = await prisma.problem.findMany({
+    include: {
+      _count: { select: { occurrences: true } },
+      occurrences: { orderBy: { occurredAt: "desc" }, take: 10 },
+    },
+  });
+  return rows
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      trigger: p.trigger,
+      counterPlan: p.counterPlan,
+      severity: p.severity,
+      status: p.status,
+      createdAt: p.createdAt.getTime(),
+      occurrenceCount: p._count.occurrences,
+      occurrences: p.occurrences.map((o) => ({
+        id: o.id,
+        occurredAt: o.occurredAt.toISOString(),
+        note: o.note,
+      })),
+    }))
+    .sort(
+      (a, b) =>
+        STATUS_RANK[a.status] - STATUS_RANK[b.status] ||
+        b.severity - a.severity ||
+        b.createdAt - a.createdAt,
+    )
+    .map(({ createdAt: _createdAt, ...view }) => view);
 }

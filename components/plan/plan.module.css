@@ -122,3 +122,41 @@
 .btns button:hover:not(:disabled) {
   color: var(--text);
 }
+
+.select {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: #0d1424;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.details summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.occ {
+  list-style: none;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.occ li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.occ button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}

@@ -1,6 +1,7 @@
 import { GoalsPanel } from "@/components/plan/GoalsPanel";
 import { PlanTabs } from "@/components/plan/PlanTabs";
-import { getGoals } from "@/lib/plan/queries";
+import { ProblemsPanel } from "@/components/plan/ProblemsPanel";
+import { getGoals, getProblems } from "@/lib/plan/queries";
 import { parseTab } from "@/lib/plan/tab";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function PlanPage({
       <h1 style={{ fontSize: 28, fontWeight: 600 }}>Plan</h1>
       <PlanTabs active={tab} />
       {tab === "goals" && <GoalsPanel goals={await getGoals()} />}
-      {tab === "problems" && <p style={{ color: "var(--muted)" }}>Problems are coming next.</p>}
+      {tab === "problems" && <ProblemsPanel problems={await getProblems()} />}
       {tab === "todo" && <p style={{ color: "var(--muted)" }}>To-do is coming next.</p>}
     </div>
   );

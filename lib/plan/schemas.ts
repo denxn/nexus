@@ -12,7 +12,7 @@ import { isDayKey, romeLocalToDate } from "@/lib/time";
 const optionalNumber = (schema: z.ZodType<number>) =>
   z.preprocess((v) => decimalComma(blankToUndefined(v)), schema.optional());
 
-const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) =>
+const optionalEnum = <const T extends readonly [string, ...string[]]>(values: T) =>
   z.preprocess(blankToUndefined, z.enum(values).optional());
 
 const optionalId = z.preprocess(blankToUndefined, z.string().optional());
