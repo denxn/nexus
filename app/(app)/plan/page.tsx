@@ -1,8 +1,10 @@
 import { GoalsPanel } from "@/components/plan/GoalsPanel";
 import { PlanTabs } from "@/components/plan/PlanTabs";
 import { ProblemsPanel } from "@/components/plan/ProblemsPanel";
-import { getGoals, getProblems } from "@/lib/plan/queries";
+import { TodoPanel } from "@/components/plan/TodoPanel";
+import { getGoalAndProblemOptions, getGoals, getProblems, getTodos } from "@/lib/plan/queries";
 import { parseTab } from "@/lib/plan/tab";
+import { dayKey } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +20,13 @@ export default async function PlanPage({
       <PlanTabs active={tab} />
       {tab === "goals" && <GoalsPanel goals={await getGoals()} />}
       {tab === "problems" && <ProblemsPanel problems={await getProblems()} />}
-      {tab === "todo" && <p style={{ color: "var(--muted)" }}>To-do is coming next.</p>}
+      {tab === "todo" && (
+        <TodoPanel
+          todos={await getTodos()}
+          {...(await getGoalAndProblemOptions())}
+          todayKey={dayKey(new Date())}
+        />
+      )}
     </div>
   );
 }

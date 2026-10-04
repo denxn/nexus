@@ -160,3 +160,45 @@
   color: var(--muted);
   cursor: pointer;
 }
+
+.todo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 4px 12px;
+  padding: 12px 14px;
+}
+
+.todo input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.todoMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.todo .btns {
+  grid-column: 2;
+}
+
+.struck {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.completed {
+  margin-top: 16px;
+}
+
+.completed summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}

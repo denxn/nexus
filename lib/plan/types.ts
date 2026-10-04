@@ -25,3 +25,15 @@ export type ProblemView = {
   occurrenceCount: number;
   occurrences: { id: string; occurredAt: string; note: string | null }[]; // newest first, latest 10
 };
+
+export type TodoView = {
+  id: string;
+  title: string;
+  dueDate: string | null;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  done: boolean;
+  goalId: string | null;
+  goalTitle: string | null;
+  problemId: string | null;
+  problemTitle: string | null;
+};

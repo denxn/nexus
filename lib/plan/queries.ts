@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import type { EntryLike } from "@/lib/stats";
 import { addDays, dayKey } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
-import type { GoalView, ProblemView } from "./types";
+import type { GoalView, ProblemView, TodoView } from "./types";
 
 export async function getGoals(): Promise<GoalView[]> {
   const goals = await prisma.goal.findMany({ orderBy: { createdAt: "desc" } });
@@ -80,4 +80,34 @@ export async function getProblems(): Promise<ProblemView[]> {
         b.createdAt - a.createdAt,
     )
     .map(({ createdAt: _createdAt, ...view }) => view);
+}
+
+/** All todos; completed ones newest-completed first (orderTodos keeps that order). */
+export async function getTodos(): Promise<TodoView[]> {
+  const rows = await prisma.todo.findMany({
+    include: { goal: { select: { title: true } }, problem: { select: { title: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  const time = (d: Date | null) => d?.getTime() ?? 0;
+  return rows
+    .sort((a, b) => (a.done && b.done ? time(b.doneAt) - time(a.doneAt) : 0))
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueDate: t.dueDate,
+      priority: t.priority,
+      done: t.done,
+      goalId: t.goalId,
+      goalTitle: t.goal?.title ?? null,
+      problemId: t.problemId,
+      problemTitle: t.problem?.title ?? null,
+    }));
+}
+
+export async function getGoalAndProblemOptions() {
+  const [goals, problems] = await Promise.all([
+    prisma.goal.findMany({ where: { status: { not: "DONE" } }, select: { id: true, title: true }, orderBy: { createdAt: "desc" } }),
+    prisma.problem.findMany({ where: { status: { not: "SOLVED" } }, select: { id: true, title: true }, orderBy: { createdAt: "desc" } }),
+  ]);
+  return { goals, problems };
 }
