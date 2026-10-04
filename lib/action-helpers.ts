@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 
 export function readForm(formData: FormData): Record<string, string> {
@@ -23,3 +23,13 @@ export function parseWith<S extends z.ZodType>(
   }
   return { state: { ok: false, errors, values } };
 }
+
+const idSchema = z.string().min(1);
+
+/**
+ * Validates an id passed to a Server Action. Prisma ignores an `undefined` filter,
+ * so deleteMany/updateMany with a missing id would hit every row.
+ */
+export const parseId = (value: unknown): string => idSchema.parse(value);
+
+export const parseFlag = (value: unknown): boolean => z.boolean().parse(value);

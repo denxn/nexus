@@ -138,4 +138,22 @@ describe("month helpers", () => {
     expect(parseDay(undefined)).toBeNull();
     expect(parseDay("")).toBeNull();
   });
+
+  test("years outside 1970 to 2100 are not valid day keys or months (they would overflow date math)", () => {
+    expect(isDayKey("9999-12-31")).toBe(false);
+    expect(isDayKey("1969-12-31")).toBe(false);
+    expect(isDayKey("0050-01-01")).toBe(false);
+    expect(isDayKey("1970-01-01")).toBe(true);
+    expect(isDayKey("2100-12-31")).toBe(true);
+    const current = monthKeyOf(dayKey(new Date()));
+    expect(parseMonth("9999-12")).toBe(current);
+    expect(parseMonth("0050-01")).toBe(current);
+    expect(parseMonth("2100-12")).toBe("2100-12");
+    expect(parseDay("9999-12-31")).toBeNull();
+  });
+
+  test("the grid for the last supported month does not throw", () => {
+    expect(() => monthMatrix("2100-12")).not.toThrow();
+    expect(addMonths("2100-12", 1)).toBe("2101-01");
+  });
 });

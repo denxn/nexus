@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
-import { parseWith, readForm } from "@/lib/action-helpers";
+import { parseId, parseWith, readForm } from "@/lib/action-helpers";
 import { prisma } from "@/lib/db";
 import { withSaveErrors } from "@/lib/entries/save";
 import { goalSchema } from "@/lib/plan/schemas";
@@ -33,7 +33,7 @@ export async function updateGoal(id: string, _prev: ActionState, formData: FormD
   if (!("data" in parsed)) return parsed.state;
   const state = await withSaveErrors(values, async () => {
     await prisma.goal.update({
-      where: { id },
+      where: { id: parseId(id) },
       data: { ...parsed.data, category: parsed.data.category ?? null, deadline: parsed.data.deadline ?? null },
     });
   });
@@ -44,12 +44,12 @@ export async function updateGoal(id: string, _prev: ActionState, formData: FormD
 export async function setGoalStatus(id: string, status: string): Promise<void> {
   await requireSession();
   const parsed = z.enum(["ACTIVE", "DONE", "PAUSED"]).parse(status);
-  await prisma.goal.updateMany({ where: { id }, data: { status: parsed } });
+  await prisma.goal.updateMany({ where: { id: parseId(id) }, data: { status: parsed } });
   revalidate();
 }
 
 export async function deleteGoal(id: string): Promise<void> {
   await requireSession();
-  await prisma.goal.deleteMany({ where: { id } });
+  await prisma.goal.deleteMany({ where: { id: parseId(id) } });
   revalidate();
 }

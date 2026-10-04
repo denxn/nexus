@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
-import { parseWith, readForm } from "@/lib/action-helpers";
+import { parseFlag, parseId, parseWith, readForm } from "@/lib/action-helpers";
 import { prisma } from "@/lib/db";
 import { withSaveErrors } from "@/lib/entries/save";
 import { todoSchema } from "@/lib/plan/schemas";
@@ -34,7 +34,7 @@ export async function updateTodo(id: string, _prev: ActionState, formData: FormD
   const { dueDate, goalId, problemId, ...rest } = parsed.data;
   const state = await withSaveErrors(values, async () => {
     await prisma.todo.update({
-      where: { id },
+      where: { id: parseId(id) },
       data: { ...rest, dueDate: dueDate ?? null, goalId: goalId ?? null, problemId: problemId ?? null },
     });
   });
@@ -44,12 +44,13 @@ export async function updateTodo(id: string, _prev: ActionState, formData: FormD
 
 export async function toggleTodo(id: string, done: boolean): Promise<void> {
   await requireSession();
-  await prisma.todo.updateMany({ where: { id }, data: { done, doneAt: done ? new Date() : null } });
+  const flag = parseFlag(done);
+  await prisma.todo.updateMany({ where: { id: parseId(id) }, data: { done: flag, doneAt: flag ? new Date() : null } });
   revalidate();
 }
 
 export async function deleteTodo(id: string): Promise<void> {
   await requireSession();
-  await prisma.todo.deleteMany({ where: { id } });
+  await prisma.todo.deleteMany({ where: { id: parseId(id) } });
   revalidate();
 }

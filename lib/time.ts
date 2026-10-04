@@ -81,9 +81,15 @@ export function rangeKeys(endKey: string, days: number): string[] {
   return Array.from({ length: days }, (_, i) => addDays(endKey, i - (days - 1)));
 }
 
-/** True only for a real calendar date written as "YYYY-MM-DD". */
+// Years outside this range overflow date math (year 10000, two-digit years).
+const MIN_YEAR = 1970;
+const MAX_YEAR = 2100;
+const yearInRange = (y: number) => y >= MIN_YEAR && y <= MAX_YEAR;
+
+/** True only for a real calendar date written as "YYYY-MM-DD" with a year from 1970 to 2100. */
 export function isDayKey(s: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  if (!yearInRange(Number(s.slice(0, 4)))) return false;
   return toKey(parseKey(s)) === s;
 }
 
@@ -122,7 +128,7 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 /** Valid "YYYY-MM" from a search param, else the current Rome month. */
 export function parseMonth(v: string | string[] | undefined): string {
   const raw = first(v);
-  return raw && /^\d{4}-(0[1-9]|1[0-2])$/.test(raw)
+  return raw && /^\d{4}-(0[1-9]|1[0-2])$/.test(raw) && yearInRange(Number(raw.slice(0, 4)))
     ? raw
     : monthKeyOf(dayKey(new Date()));
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
+import { parseId } from "@/lib/action-helpers";
 import { prisma } from "@/lib/db";
 import { entryInputSchema } from "@/lib/entries/schema";
 import { withSaveErrors } from "@/lib/entries/save";
@@ -61,7 +62,7 @@ export async function updateEntry(
   const { type, value, label, occurredAt } = parsed.data;
   const state = await withSaveErrors(values, async () => {
     await prisma.entry.update({
-      where: { id },
+      where: { id: parseId(id) },
       data: { type, value, label: label ?? null, ...(occurredAt && { occurredAt }) },
     });
   });
@@ -72,6 +73,6 @@ export async function updateEntry(
 export async function deleteEntry(id: string): Promise<void> {
   await requireSession();
   // deleteMany so an entry that is already gone is not an error.
-  await prisma.entry.deleteMany({ where: { id } });
+  await prisma.entry.deleteMany({ where: { id: parseId(id) } });
   revalidatePath("/");
 }
