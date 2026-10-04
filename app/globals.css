@@ -1,0 +1,54 @@
+:root {
+  --bg: #070b14;
+  --bg-2: #0c1322;
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --text: #e8edf7;
+  --muted: #8592ad;
+  --accent: #3da9ff;
+
+  --c-workout: #19e3a4;
+  --c-study: #3d8bff;
+  --c-sleep: #8b6bff;
+  --c-calories: #ff9a3d;
+  --c-mood: #ffd23d;
+  --danger: #ff5d6c;
+}
+
+html {
+  height: 100%;
+  color-scheme: dark;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  color: var(--text);
+  background: radial-gradient(1200px 600px at 20% -10%, #14213d 0%, var(--bg) 60%) fixed;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}

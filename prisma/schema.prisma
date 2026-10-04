@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EntryType {
+  WORKOUT
+  STUDY
+  SLEEP
+  MEAL
+  MOOD
+}
+
+enum Source {
+  MANUAL
+  APPLE_HEALTH
+  GOOGLE_CAL
+}
+
+enum Period {
+  DAY
+  WEEK
+}
+
+model Entry {
+  id         String    @id @default(cuid())
+  type       EntryType
+  occurredAt DateTime
+  value      Float
+  label      String?
+  meta       Json?
+  source     Source    @default(MANUAL)
+  externalId String?
+  createdAt  DateTime  @default(now())
+
+  @@unique([source, externalId])
+  @@index([occurredAt])
+}
+
+model Target {
+  id     String    @id @default(cuid())
+  type   EntryType
+  period Period
+  value  Float
+
+  @@unique([type, period])
+}
