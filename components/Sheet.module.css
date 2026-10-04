@@ -1,0 +1,35 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 5, 12, 0.7);
+  display: grid;
+  place-items: end center;
+  z-index: 30;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 460px;
+  max-height: 92vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #0d1424;
+}
+
+.heading {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 600px) {
+  .backdrop {
+    place-items: center;
+  }
+  .sheet {
+    border-radius: 16px;
+  }
+}

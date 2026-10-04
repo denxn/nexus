@@ -1,0 +1,121 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.field select option {
+  background: #0d1424;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field [aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.field em {
+  color: var(--danger);
+  font-style: normal;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 420px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pill input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pillOn {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(61, 169, 255, 0.1);
+}
+
+.formError {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel,
+.save {
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.save {
+  border: 0;
+  background: var(--accent);
+  color: #04101f;
+  font-weight: 600;
+}
+
+.save:disabled {
+  opacity: 0.6;
+}
