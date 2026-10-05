@@ -30,7 +30,7 @@ Choose `APP_PASSWORD` yourself: a long passphrase (16+ characters). It is the on
 
 1. In Vercel choose **Add New, Project** and import the repository.
 2. Framework preset: **Next.js** (detected automatically). Leave the install command alone. Vercel automatically uses the `vercel-build` script from `package.json`, which runs `prisma generate`, `prisma migrate deploy` and `next build`.
-3. Before the first deploy, open **Environment Variables** and add these for **Production** (and Preview too if you want preview deployments to work):
+3. Before the first deploy, open **Environment Variables** and add these for **Production**:
 
 | Name | Value |
 |---|---|
@@ -40,6 +40,8 @@ Choose `APP_PASSWORD` yourself: a long passphrase (16+ characters). It is the on
 | `SESSION_SECRET` | the `openssl` output |
 
 Optional login limits (defaults are 5 failures per IP, 20 in total, over 15 minutes): `LOGIN_MAX_ATTEMPTS`, `LOGIN_GLOBAL_MAX`, `LOGIN_WINDOW_MINUTES`.
+
+**Preview deployments: do not reuse the production values.** Every Vercel build, Preview included, runs `prisma migrate deploy` against the `DIRECT_URL` it is given, and a preview app reads and writes whatever `DATABASE_URL` points at. With production values, an unmerged branch could change your live database. Either leave the four variables unset for Preview (previews then simply cannot log in or build the database step), or create a separate Neon branch for previews and give Preview its own `DATABASE_URL` and `DIRECT_URL`.
 
 If `APP_PASSWORD` or `SESSION_SECRET` is missing, nobody can log in: the app fails closed.
 
@@ -60,13 +62,13 @@ Open the deployment URL and check, in order:
 
 ## 6. Test the build on your machine first (recommended)
 
-This runs the same steps Vercel runs, against whatever `DATABASE_URL` is in your `.env.local` or `.env`:
+This runs the same steps Vercel runs:
 
 ```bash
 npm run vercel-build
 ```
 
-Use a throwaway database for this, not production data. (Migrations are additive, but it is a good habit.)
+**Migrations run against `DIRECT_URL` if it is set, otherwise `DATABASE_URL`**, read from `.env.local` and then `.env`. So before running it, make sure **both** point at a throwaway database (or that `DIRECT_URL` is unset). If your `.env.local` holds your production `DIRECT_URL`, this command will migrate production. Migrations here are additive, but check anyway.
 
 ## Operating notes
 
