@@ -12,7 +12,7 @@ export type WeekRow = {
 const reached = (value: number, target: number): CellState =>
   value >= target ? "met" : value > 0 ? "partial" : "none";
 
-function stateFor(metric: Metric, s: DayStats, t: Targets): CellState {
+export function stateFor(metric: Metric, s: DayStats, t: Targets): CellState {
   switch (metric) {
     case "workout":
       return s.workoutCount >= 1 ? "met" : "none";
