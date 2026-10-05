@@ -146,3 +146,14 @@ model LoginAttempt {
 
   @@index([at])
 }
+
+model Note {
+  id        String   @id @default(cuid())
+  day       String // day key YYYY-MM-DD (Rome)
+  title     String?
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([day])
+}
