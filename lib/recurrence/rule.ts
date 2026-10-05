@@ -21,6 +21,16 @@ function lastDayOfMonth(month: string): number {
 }
 
 /**
+ * The month day a monthly to-do should remember after its due date is saved: the stored one when the
+ * due date is just that day clamped to a short month (31 shown as 28 Feb), otherwise the due date's own day.
+ */
+export function keepMonthDay(stored: number | null, due: string): number {
+  const dueDay = Number(due.slice(8));
+  if (stored !== null && stored > dueDay && dueDay === Math.min(stored, lastDayOfMonth(due.slice(0, 7)))) return stored;
+  return dueDay;
+}
+
+/**
  * Occurrence day keys of a rule inside [from, to], ascending. Never before the anchor, never after
  * `until`, skipped days removed.
  */

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { showSystemNotice } from "@/lib/reminders/notify";
 import { planReminders, pruneReminded, type ReminderTask } from "@/lib/reminders/schedule";
 import styles from "./reminders.module.css";
 
@@ -49,9 +50,7 @@ export function ReminderScheduler({ tasks }: { tasks: ReminderTask[] }) {
       writeStored(stored);
       setToasts((cur) => (cur.some((c) => c.key === t.key) ? cur : [...cur, { key: t.key, title: t.title, startsAt: t.startsAt }]));
       timers.current.push(window.setTimeout(() => setToasts((cur) => cur.filter((c) => c.key !== t.key)), TOAST_MS));
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        new Notification(t.title, { body: `Starts at ${clock.format(new Date(t.startsAt))}`, tag: t.key });
-      }
+      showSystemNotice(typeof Notification === "undefined" ? undefined : Notification, t.title, `Starts at ${clock.format(new Date(t.startsAt))}`, t.key);
     };
 
     const { fireNow, later } = planReminders(tasks, now, reminded);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { expandOccurrences, nextOccurrence, weekdayOf, type Rule } from "./rule";
+import { expandOccurrences, keepMonthDay, nextOccurrence, weekdayOf, type Rule } from "./rule";
 
 const rule = (over: Partial<Rule> = {}): Rule => ({ repeat: "DAILY", interval: 1, weekdays: [], until: null, monthDay: null, ...over });
 
@@ -131,5 +131,17 @@ describe("nextOccurrence", () => {
 
   test("finds a far-off occurrence (every 52 weeks)", () => {
     expect(nextOccurrence(rule({ repeat: "WEEKLY", interval: 52, weekdays: [0] }), "2026-10-05", "2026-10-05")).toBe("2027-10-04");
+  });
+});
+
+describe("keepMonthDay", () => {
+  test("keeps the remembered day when the due date is its clamped form", () => {
+    expect(keepMonthDay(31, "2026-02-28")).toBe(31);
+    expect(keepMonthDay(30, "2026-04-30")).toBe(30);
+  });
+  test("takes the due date's day when it is not the clamp of the remembered one", () => {
+    expect(keepMonthDay(31, "2026-02-15")).toBe(15);
+    expect(keepMonthDay(null, "2026-02-28")).toBe(28);
+    expect(keepMonthDay(10, "2026-03-12")).toBe(12);
   });
 });

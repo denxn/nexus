@@ -84,6 +84,7 @@ export function DayAgenda({ day, agenda }: { day: string; agenda: DayAgendaData 
             <input
               type="checkbox"
               checked={t.done}
+              disabled={pending}
               aria-label={`${t.done ? "Reopen" : "Complete"} ${t.title}`}
               onChange={(ev) => startTransition(() => toggleTodo(t.id, ev.target.checked))}
             />

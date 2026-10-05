@@ -19,6 +19,7 @@ export function TodayTodos({ items }: { items: Item[] }) {
           <input
             type="checkbox"
             checked={t.done}
+            disabled={pending}
             aria-label={`${t.done ? "Reopen" : "Complete"} ${t.title}`}
             onChange={(e) => startTransition(() => toggleTodo(t.id, e.target.checked))}
           />

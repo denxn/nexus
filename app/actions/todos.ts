@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { withSaveErrors } from "@/lib/entries/save";
 import { todoSchema } from "@/lib/plan/schemas";
 import { advanceTodo } from "@/lib/plan/rollTodo";
+import { keepMonthDay } from "@/lib/recurrence/rule";
 import { requireSession } from "@/lib/require-session";
 
 const revalidate = () => {
@@ -34,9 +35,16 @@ export async function updateTodo(id: string, _prev: ActionState, formData: FormD
   if (!("data" in parsed)) return parsed.state;
   const { dueDate, goalId, problemId, repeatUntil, ...rest } = parsed.data;
   const state = await withSaveErrors(values, async () => {
+    const todoId = parseId(id);
+    let repeatMonthDay = rest.repeatMonthDay;
+    if (rest.repeat === "MONTHLY" && dueDate) {
+      // A clamped due date (28 Feb for the 31st) must not overwrite the remembered day.
+      const current = await prisma.todo.findUnique({ where: { id: todoId }, select: { repeatMonthDay: true } });
+      repeatMonthDay = keepMonthDay(current?.repeatMonthDay ?? null, dueDate);
+    }
     await prisma.todo.update({
-      where: { id: parseId(id) },
-      data: { ...rest, dueDate: dueDate ?? null, goalId: goalId ?? null, problemId: problemId ?? null, repeatUntil: repeatUntil ?? null },
+      where: { id: todoId },
+      data: { ...rest, repeatMonthDay, dueDate: dueDate ?? null, goalId: goalId ?? null, problemId: problemId ?? null, repeatUntil: repeatUntil ?? null },
     });
   });
   if (state.ok) revalidate();
