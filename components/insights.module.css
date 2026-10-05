@@ -230,3 +230,85 @@
   background: #0d1424;
   font-size: 12px;
 }
+
+.flaws {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.flaw {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.flaw:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.flawHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.weeks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  height: 84px;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 100%;
+  font-size: 12px;
+}
+
+.week i {
+  width: 70%;
+  max-width: 36px;
+  border-radius: 4px 4px 0 0;
+  background: var(--danger);
+  opacity: 0.8;
+}
+
+.week small {
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.trend {
+  font-size: 13px;
+}
+
+.findings {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
