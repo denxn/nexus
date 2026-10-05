@@ -50,7 +50,8 @@ test("plan a goal, a to-do and an event, see them on the dashboard, then clean u
 
   // Dashboard previews.
   await page.goto("/");
-  await expect(page.getByText(goal)).toBeVisible();
+  // exact: the Daily brief may also mention the goal ("... is due today at 33%").
+  await expect(page.getByText(goal, { exact: true })).toBeVisible();
   await expect(page.getByText(event)).toBeVisible();
   await expect(page.getByText(todo)).toBeVisible();
 

@@ -40,7 +40,9 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
 
 - **Plan** (`/plan`) has three tabs: Goals (manual, or measured from your logs), Problems (with occurrences) and To-do. `/goals` and `/flaws` redirect there.
 - **Calendar** (`/calendar`) shows a month grid and a day agenda with your events, to-dos due and what you logged. Add events with **+ Add**.
-- The dashboard shows Goals, This Week and a mini Calendar under the timeline.
+- The dashboard shows a Daily brief and a Discipline score at the top, then Goals, This Week and a mini Calendar under the timeline, and a Performance overview and Activity correlation chart below.
+- **Analytics** (`/analytics`) has the full Performance overview, a correlation explorer (any two metrics, same day or next day) and Flaws analytics: how a problem's occurrences relate to sleep, study and mood on the following day.
+- The brief, score and insights are computed from your own data. Nothing leaves the app, and no API key is needed.
 - Press **N** (or tap **+**) to log an entry. Entries can be edited or deleted from Recent Activity.
 - The **When** field defaults to now (Rome time); change it to back-date an entry, for example last night's sleep. Decimal commas work (`7,5`).
 - Days are cut in the Europe/Rome timezone. A sleep entry counts for the day you wake up.
@@ -63,4 +65,4 @@ npx playwright test
 
 ## Stages
 
-Stage 1 covers login, quick-log, stat cards and the Life Timeline. Stage 2 adds Plan (Goals, Problems, To-do), the Calendar and the This Week grid. The correlation view and AI daily brief come in Stage 3.
+Stage 1 covers login, quick-log, stat cards and the Life Timeline. Stage 2 adds Plan (Goals, Problems, To-do), the Calendar and the This Week grid. Stage 3 adds the discipline score, daily brief, performance overview, correlation chart and Flaws analytics.
