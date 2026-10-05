@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { DayStats } from "@/lib/stats";
-import { daysSinceWorkout, nearestDueGoal, strongestFlaw } from "./briefInput";
+import { daysSinceWorkout, lastNightSleep, nearestDueGoal, strongestFlaw } from "./briefInput";
 import type { ProblemFindings } from "./flaws";
 
 const row = (day: string, over: Partial<DayStats> = {}): DayStats => ({
@@ -74,5 +74,19 @@ describe("strongestFlaw", () => {
   test("null when there are no findings", () => {
     expect(strongestFlaw([])).toBeNull();
     expect(strongestFlaw([item("A", [])])).toBeNull();
+  });
+});
+
+describe("lastNightSleep", () => {
+  test("a sleep entry belongs to the day you wake up, so last night is today's row", () => {
+    expect(lastNightSleep([row("2026-10-06", { sleepH: 8 }), row(TODAY, { sleepH: 5 })], TODAY)).toBe(5);
+  });
+
+  test("when today has no sleep logged yet it is unknown, not yesterday's row", () => {
+    expect(lastNightSleep([row("2026-10-06", { sleepH: 8 }), row(TODAY)], TODAY)).toBeNull();
+  });
+
+  test("no rows gives null", () => {
+    expect(lastNightSleep([], TODAY)).toBeNull();
   });
 });

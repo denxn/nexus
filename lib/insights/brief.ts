@@ -7,7 +7,7 @@ export type BriefInput = {
   flaw: { title: string; metric: "sleep" | "study" | "mood"; changePct: number } | null;
   overdueTodos: number;
   goal: { title: string; daysLeft: number; pct: number } | null;
-  yesterdaySleepH: number | null;
+  lastNightSleepH: number | null;
   sleepTarget: number;
   daysSinceWorkout: number | null;
 };
@@ -39,7 +39,7 @@ export function buildBrief(input: BriefInput): { headline: string; lines: string
     const when = daysLeft <= 0 ? "today" : `in ${daysLeft} ${daysLeft === 1 ? "day" : "days"}`;
     lines.push(`${title} is due ${when} at ${pct}%`);
   }
-  if (input.yesterdaySleepH !== null && input.yesterdaySleepH < input.sleepTarget) {
+  if (input.lastNightSleepH !== null && input.lastNightSleepH < input.sleepTarget) {
     lines.push("Aim for an earlier night tonight");
   } else if (input.daysSinceWorkout !== null && input.daysSinceWorkout >= 3) {
     lines.push("A workout today would keep your week on track");

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { CORR_METRICS, parseCorrelationParams, parseLag, parsePerf } from "./params";
+import { CORR_METRICS, insightSpan, parseCorrelationParams, parseLag, parsePerf } from "./params";
 
 describe("parsePerf", () => {
   test("accepts week, month and year", () => {
@@ -55,5 +55,16 @@ describe("parseCorrelationParams", () => {
 
   test("lag 1 is kept", () => {
     expect(parseCorrelationParams({ lag: "1" }).lag).toBe(1);
+  });
+});
+
+describe("insightSpan", () => {
+  test("streak, has-data and last-workout answers must not depend on the chosen period", () => {
+    expect(insightSpan("week")).toBe(insightSpan("month"));
+    expect(insightSpan("week")).toBeGreaterThanOrEqual(365);
+  });
+
+  test("the year view needs two years of days to compare with the previous year", () => {
+    expect(insightSpan("year")).toBeGreaterThanOrEqual(730);
   });
 });

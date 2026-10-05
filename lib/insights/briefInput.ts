@@ -39,3 +39,12 @@ export function strongestFlaw(
   }
   return best;
 }
+
+/**
+ * Last night's sleep hours. A sleep entry belongs to the day you wake up (Stage 1 rule), so it
+ * is today's row; if nothing is logged for today yet it is unknown rather than yesterday's row.
+ */
+export function lastNightSleep(stats: DayStats[], todayKey: string): number | null {
+  const today = stats.find((s) => s.day === todayKey);
+  return today && today.sleepH > 0 ? today.sleepH : null;
+}

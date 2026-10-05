@@ -5,11 +5,11 @@ import { getDailyStats } from "@/lib/stats";
 import { getTargets } from "@/lib/targets";
 import { addDays, dayKey } from "@/lib/time";
 import { buildBrief } from "./brief";
-import { daysSinceWorkout, nearestDueGoal, strongestFlaw } from "./briefInput";
+import { daysSinceWorkout, lastNightSleep, nearestDueGoal, strongestFlaw } from "./briefInput";
 import { correlate, strongestCorrelation } from "./correlation";
 import { flawsAnalytics } from "./flaws";
 import { isActiveDay } from "./activeDay";
-import type { CorrMetric, PerfPeriod } from "./params";
+import { insightSpan, type CorrMetric, type PerfPeriod } from "./params";
 import { performance } from "./performance";
 import { disciplineScore, loggingStreak } from "./score";
 
@@ -19,12 +19,10 @@ export type InsightOptions = {
   greeting: string;
 };
 
-const SPAN: Record<PerfPeriod, number> = { week: 14, month: 60, year: 730 };
-
 /** Everything the insight cards need, derived from one stats fetch. */
 export async function getInsightData(opts: InsightOptions) {
   const today = dayKey(new Date());
-  const span = Math.max(SPAN[opts.perf], 90); // correlation and flaws always need 90 days
+  const span = insightSpan(opts.perf);
   const since = new Date(`${addDays(today, -91)}T00:00:00Z`);
 
   const [stats, targets, todoRows, goals, problemRows] = await Promise.all([
@@ -49,7 +47,6 @@ export async function getInsightData(opts: InsightOptions) {
     today,
   );
 
-  const yesterday = stats.length >= 2 ? stats[stats.length - 2] : undefined;
   const brief = buildBrief({
     greeting: opts.greeting,
     score,
@@ -59,7 +56,7 @@ export async function getInsightData(opts: InsightOptions) {
     flaw: strongestFlaw(flaws),
     overdueTodos: todoRows.filter((t) => isOverdue({ id: "", done: t.done, dueDate: t.dueDate, priority: t.priority }, today)).length,
     goal: nearestDueGoal(goals, today),
-    yesterdaySleepH: yesterday && yesterday.sleepH > 0 ? yesterday.sleepH : null,
+    lastNightSleepH: lastNightSleep(stats, today),
     sleepTarget: targets.sleepH,
     daysSinceWorkout: daysSinceWorkout(stats, today),
   });

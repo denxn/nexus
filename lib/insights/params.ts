@@ -32,3 +32,11 @@ export function parseCorrelationParams(p: { cx?: Param; cy?: Param; lag?: Param 
   if (y === x) y = x === "study" ? "sleep" : "study";
   return { x, y, lag: parseLag(p.lag) };
 }
+
+/**
+ * Days of stats to fetch. Streak, "has data" and "days since a workout" use the same window whatever
+ * period is chosen (so they never change with ?perf); the year view needs two years to compare.
+ */
+export function insightSpan(period: PerfPeriod): number {
+  return period === "year" ? 730 : 365;
+}

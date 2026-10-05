@@ -10,7 +10,7 @@ const base: BriefInput = {
   flaw: null,
   overdueTodos: 0,
   goal: null,
-  yesterdaySleepH: null,
+  lastNightSleepH: null,
   sleepTarget: 8,
   daysSinceWorkout: null,
 };
@@ -60,14 +60,14 @@ describe("buildBrief", () => {
     expect(brief({ goal: { title: "Study 10h", daysLeft: 0, pct: 45 } }).lines).toEqual(["Study 10h is due today at 45%"]);
   });
 
-  test("the sleep suggestion appears when yesterday's sleep is under target", () => {
-    expect(brief({ yesterdaySleepH: 6, daysSinceWorkout: 5 }).lines).toEqual(["Aim for an earlier night tonight"]);
-    expect(brief({ yesterdaySleepH: 8 }).lines).toEqual([]);
+  test("the sleep suggestion appears when last night's sleep is under target", () => {
+    expect(brief({ lastNightSleepH: 6, daysSinceWorkout: 5 }).lines).toEqual(["Aim for an earlier night tonight"]);
+    expect(brief({ lastNightSleepH: 8 }).lines).toEqual([]);
   });
 
   test("the workout suggestion appears after 3 days without one, but only when sleep does not trigger", () => {
-    expect(brief({ yesterdaySleepH: 8, daysSinceWorkout: 3 }).lines).toEqual(["A workout today would keep your week on track"]);
-    expect(brief({ yesterdaySleepH: 8, daysSinceWorkout: 2 }).lines).toEqual([]);
+    expect(brief({ lastNightSleepH: 8, daysSinceWorkout: 3 }).lines).toEqual(["A workout today would keep your week on track"]);
+    expect(brief({ lastNightSleepH: 8, daysSinceWorkout: 2 }).lines).toEqual([]);
     expect(brief({ daysSinceWorkout: 10 }).lines).toEqual(["A workout today would keep your week on track"]);
   });
 
@@ -86,7 +86,7 @@ describe("buildBrief", () => {
       flaw: { title: "F", metric: "study", changePct: -20 },
       overdueTodos: 2,
       goal: { title: "G", daysLeft: 2, pct: 10 },
-      yesterdaySleepH: 5,
+      lastNightSleepH: 5,
     });
     expect(b.lines).toHaveLength(4);
     expect(b.lines[3]).toBe("G is due in 2 days at 10%");
