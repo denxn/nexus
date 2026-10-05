@@ -19,6 +19,8 @@ function dailyTotals(entries: Entry[]): [string, number][] {
     const day = dayKey(e.occurredAt);
     totals.set(day, (totals.get(day) ?? 0) + e.value);
   }
+  // Round away float noise (0.6 + 4.1 + 3.3 is 7.999999999999999) so "exactly the target" compares correctly.
+  for (const [day, total] of totals) totals.set(day, Math.round(total * 1e6) / 1e6);
   return [...totals.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 }
 

@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatDuration } from "@/lib/format";
+import { chartAxis } from "@/lib/history/chartAxis";
 import styles from "./history.module.css";
 
 const dayLabel = (key: string, opts: Intl.DateTimeFormatOptions) =>
@@ -22,15 +23,12 @@ export function HistoryChart({
   target?: number;
 }) {
   const fmt = (v: number) => (unit === "min" ? formatDuration(v) : `${Math.round(v * 10) / 10} h`);
-  // Minute charts get whole-hour ticks (1h, 2h, ...) instead of awkward raw minutes.
-  const top = Math.max(1, ...points.map((p) => p.v), target ?? 0);
-  const step = top <= 240 ? 60 : top <= 480 ? 120 : 240;
-  const hourTicks = unit === "min" ? Array.from({ length: Math.ceil(top / step) + 1 }, (_, i) => i * step) : undefined;
+  const axis = chartAxis(points.map((p) => p.v), target, unit);
   const common = (
     <>
       <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
       <XAxis dataKey="day" tickFormatter={(d: string) => dayLabel(d, { day: "numeric", month: "short" })} stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} minTickGap={28} />
-      <YAxis stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} width={40} allowDecimals={false} ticks={hourTicks} tickFormatter={unit === "min" ? (v: number) => `${v / 60}h` : undefined} />
+      <YAxis stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} width={40} allowDecimals={false} domain={[0, axis.max]} ticks={axis.ticks} tickFormatter={unit === "min" ? (v: number) => `${v / 60}h` : undefined} />
       <Tooltip
         cursor={{ fill: "rgba(255,255,255,0.05)" }}
         content={({ active, payload }) => {

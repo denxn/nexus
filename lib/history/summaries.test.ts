@@ -52,6 +52,17 @@ describe("summarizeWorkouts", () => {
   });
 });
 
+describe("summarizeStudy (float noise)", () => {
+  test("decimal minutes that add up to the target count as meeting it", () => {
+    const s = summarizeStudy(
+      [e("STUDY", "2026-10-04T08:00:00Z", 0.1), e("STUDY", "2026-10-04T09:00:00Z", 239.7), e("STUDY", "2026-10-04T10:00:00Z", 0.2)],
+      DEFAULT_TARGETS,
+    );
+    expect(s.best?.minutes).toBe(240);
+    expect(s.daysMetTarget).toBe(1);
+  });
+});
+
 describe("summarizeStudy", () => {
   test("entries on one day add up; average divides by study days, not window days", () => {
     const s = summarizeStudy(
@@ -93,6 +104,17 @@ describe("summarizeStudy", () => {
 
 describe("summarizeSleep", () => {
   const sleep = (iso: string, h: number) => e("SLEEP", iso, h);
+
+  test("float noise in a day's sum does not hide a night that adds up to the target", () => {
+    // 0.6 + 4.1 + 3.3 is 7.999999999999999 in floating point
+    const s = summarizeSleep(
+      [sleep("2026-10-04T01:00:00Z", 0.6), sleep("2026-10-04T05:00:00Z", 4.1), sleep("2026-10-04T13:00:00Z", 3.3)],
+      DEFAULT_TARGETS,
+    );
+    expect(s.best?.hours).toBe(8);
+    expect(s.daysMetTarget).toBe(1);
+    expect(s.debtHours).toBe(0);
+  });
 
   test("average over days with sleep logged; several entries on a day add up", () => {
     const s = summarizeSleep([sleep("2026-10-04T05:00:00Z", 6), sleep("2026-10-04T13:00:00Z", 1), sleep("2026-10-05T05:00:00Z", 8)], DEFAULT_TARGETS);
