@@ -17,7 +17,7 @@ import { shouldOpenQuickLog } from "@/lib/hotkey";
 import { toRomeLocalInput } from "@/lib/time";
 import styles from "./QuickLog.module.css";
 
-type Ctx = { openNew: () => void; openEdit: (entry: EntryRow) => void };
+type Ctx = { openNew: (type?: EntryTypeName) => void; openEdit: (entry: EntryRow) => void };
 const QuickLogContext = createContext<Ctx | null>(null);
 
 export function useQuickLog(): Ctx {
@@ -26,13 +26,13 @@ export function useQuickLog(): Ctx {
   return ctx;
 }
 
-type Sheet = { open: false } | { open: true; entry: EntryRow | null; nonce: number };
+type Sheet = { open: false } | { open: true; entry: EntryRow | null; nonce: number; type?: EntryTypeName };
 
 export function QuickLogProvider({ children }: { children: React.ReactNode }) {
   const [sheet, setSheet] = useState<Sheet>({ open: false });
 
   const openNew = useCallback(
-    () => setSheet((s) => ({ open: true, entry: null, nonce: (s.open ? s.nonce : 0) + 1 })),
+    (type?: EntryTypeName) => setSheet((s) => ({ open: true, entry: null, nonce: (s.open ? s.nonce : 0) + 1, type })),
     [],
   );
   const openEdit = useCallback(
@@ -68,7 +68,7 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
   return (
     <QuickLogContext.Provider value={ctx}>
       {children}
-      <button type="button" className={styles.fab} onClick={openNew} aria-label="Log an entry (N)">
+      <button type="button" className={styles.fab} onClick={() => openNew()} aria-label="Log an entry (N)">
         +
       </button>
       {sheet.open && (
@@ -80,7 +80,7 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
             className={`glass ${styles.sheet}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <LogForm key={sheet.nonce} entry={sheet.entry} onDone={finish} onCancel={close} onPendingChange={onPendingChange} />
+            <LogForm key={sheet.nonce} entry={sheet.entry} initialType={sheet.type} onDone={finish} onCancel={close} onPendingChange={onPendingChange} />
           </div>
         </div>
       )}
@@ -90,11 +90,13 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
 
 function LogForm({
   entry,
+  initialType,
   onDone,
   onCancel,
   onPendingChange,
 }: {
   entry: EntryRow | null;
+  initialType?: EntryTypeName;
   onDone: () => void;
   onCancel: () => void;
   onPendingChange: (pending: boolean) => void;
@@ -102,7 +104,7 @@ function LogForm({
   const action = entry ? updateEntry.bind(null, entry.id) : createEntry;
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [type, setType] = useState<EntryTypeName>(
-    (state.values?.type as EntryTypeName | undefined) ?? entry?.type ?? "STUDY",
+    (state.values?.type as EntryTypeName | undefined) ?? entry?.type ?? initialType ?? "STUDY",
   );
 
   // Prefilled once per open: now for a new entry, the entry's own time when editing.
