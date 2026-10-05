@@ -143,3 +143,16 @@ export function parseDay(v: string | string[] | undefined): string | null {
 export function daysBetween(a: string, b: string): number {
   return Math.round((parseKey(b).getTime() - parseKey(a).getTime()) / 86_400_000);
 }
+
+/** Minutes since midnight on the Rome wall clock (0 to 1439). */
+export function romeMinutesOfDay(d: Date): number {
+  const p = wallParts(d);
+  return p.hour * 60 + p.minute;
+}
+
+/** 402 -> "06:42". Fractions are rounded. */
+export function formatClock(minutes: number): string {
+  const total = Math.round(minutes) % 1440;
+  const two = (n: number) => String(n).padStart(2, "0");
+  return `${two(Math.floor(total / 60))}:${two(total % 60)}`;
+}

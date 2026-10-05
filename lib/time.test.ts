@@ -9,6 +9,8 @@ import {
   monthMatrix,
   parseDay,
   parseMonth,
+  romeMinutesOfDay,
+  formatClock,
   rangeKeys,
   romeLocalToDate,
   toRomeLocalInput,
@@ -165,5 +167,19 @@ describe("month helpers", () => {
     expect(daysBetween("2026-12-30", "2027-01-02")).toBe(3);
     expect(daysBetween("2028-02-28", "2028-03-01")).toBe(2);
     expect(daysBetween("2026-10-24", "2026-10-26")).toBe(2); // across the DST change
+  });
+
+  test("romeMinutesOfDay is the Rome wall clock in minutes (summer and winter)", () => {
+    expect(romeMinutesOfDay(new Date("2026-10-04T21:30:00Z"))).toBe(1410); // 23:30 CEST
+    expect(romeMinutesOfDay(new Date("2026-01-15T22:30:00Z"))).toBe(1410); // 23:30 CET
+    expect(romeMinutesOfDay(new Date("2026-10-04T22:00:00Z"))).toBe(0); // midnight
+    expect(romeMinutesOfDay(new Date("2026-10-04T04:42:00Z"))).toBe(402); // 06:42
+  });
+
+  test("formatClock pads hours and minutes", () => {
+    expect(formatClock(402)).toBe("06:42");
+    expect(formatClock(0)).toBe("00:00");
+    expect(formatClock(1439)).toBe("23:59");
+    expect(formatClock(390.4)).toBe("06:30");
   });
 });
