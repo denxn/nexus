@@ -26,7 +26,7 @@ export function DayAgenda({ day, agenda }: { day: string; agenda: DayAgendaData 
     <section className={`glass ${styles.agenda}`} aria-busy={pending}>
       <div className={styles.agendaHead}>
         <h2>{heading(day)}</h2>
-        <span className={styles.rowBtns}>
+        <span className={styles.headActions}>
           <button type="button" className={styles.add} onClick={() => setEditing("new")}>+ Add</button>
           <button type="button" className={styles.addAlt} onClick={() => setAddingNote(true)}>+ Note</button>
         </span>

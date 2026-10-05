@@ -220,3 +220,10 @@
 .logged li {
   overflow-wrap: anywhere;
 }
+
+/* Header buttons: kept apart from .rowBtns, whose "button" rule would restyle them into small ghost buttons. */
+.headActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
