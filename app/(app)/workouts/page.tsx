@@ -1,5 +1,11 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import { HistoryPage } from "@/components/history/HistoryPage";
 
-export default function Page() {
-  return <ComingSoon title="Workouts" />;
+export const dynamic = "force-dynamic";
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return <HistoryPage type="WORKOUT" basePath="/workouts" searchParams={await searchParams} />;
 }

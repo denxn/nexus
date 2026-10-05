@@ -22,11 +22,15 @@ export function HistoryChart({
   target?: number;
 }) {
   const fmt = (v: number) => (unit === "min" ? formatDuration(v) : `${Math.round(v * 10) / 10} h`);
+  // Minute charts get whole-hour ticks (1h, 2h, ...) instead of awkward raw minutes.
+  const top = Math.max(1, ...points.map((p) => p.v), target ?? 0);
+  const step = top <= 240 ? 60 : top <= 480 ? 120 : 240;
+  const hourTicks = unit === "min" ? Array.from({ length: Math.ceil(top / step) + 1 }, (_, i) => i * step) : undefined;
   const common = (
     <>
       <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
       <XAxis dataKey="day" tickFormatter={(d: string) => dayLabel(d, { day: "numeric", month: "short" })} stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} minTickGap={28} />
-      <YAxis stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} width={36} allowDecimals={false} />
+      <YAxis stroke="var(--muted)" tickLine={false} axisLine={false} fontSize={12} width={40} allowDecimals={false} ticks={hourTicks} tickFormatter={unit === "min" ? (v: number) => `${v / 60}h` : undefined} />
       <Tooltip
         cursor={{ fill: "rgba(255,255,255,0.05)" }}
         content={({ active, payload }) => {
@@ -47,12 +51,12 @@ export function HistoryChart({
     <div role="img" aria-label="Daily values over the selected range">
       <ResponsiveContainer width="100%" height={220}>
         {kind === "bars" ? (
-          <BarChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+          <BarChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             {common}
             <Bar dataKey="v" fill={color} radius={[3, 3, 0, 0]} maxBarSize={14} isAnimationActive={false} />
           </BarChart>
         ) : (
-          <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+          <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             {common}
             <Line type="monotone" dataKey="v" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
           </LineChart>
