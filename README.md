@@ -19,6 +19,7 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
    ```
 
    - `DATABASE_URL`: a Postgres connection string (for example a Neon dev branch).
+   - `DIRECT_URL` (optional): a direct, non-pooled connection used only for migrations.
    - `APP_PASSWORD`: the single password you log in with.
    - `SESSION_SECRET`: a long random string, for example from `openssl rand -base64 32`.
 
@@ -47,6 +48,10 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
 - The **When** field defaults to now (Rome time); change it to back-date an entry, for example last night's sleep. Decimal commas work (`7,5`).
 - Days are cut in the Europe/Rome timezone. A sleep entry counts for the day you wake up.
 - Default daily targets: study 4 h, sleep 8 h, calories 2,800, workouts 4 per week.
+
+## Deploying
+
+See [docs/deploy.md](docs/deploy.md) for putting Nexus online with Vercel and Neon (the guide has not been run end to end yet). Login attempts are throttled (5 wrong passwords per IP, then a 15-minute lockout) and the app serves friendly error and not-found pages, security headers and `noindex`.
 
 ## Tests
 
