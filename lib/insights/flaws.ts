@@ -59,8 +59,11 @@ export function flawsAnalytics(stats: DayStats[], problems: ProblemInput[], toda
       if (after.length < MIN_DAYS || other.length < MIN_DAYS) continue;
       const otherMean = mean(other);
       if (otherMean <= 0) continue;
-      const changePct = Math.round(((mean(after) - otherMean) / otherMean) * 100);
-      if (Math.abs(changePct) >= MIN_ABS_CHANGE) findings.push({ metric, changePct, n: after.length });
+      const change = ((mean(after) - otherMean) / otherMean) * 100;
+      // Threshold on the unrounded change (a tiny tolerance absorbs float noise at exactly 15%); display rounded.
+      if (Math.abs(change) + 1e-9 >= MIN_ABS_CHANGE) {
+        findings.push({ metric, changePct: Math.round(change), n: after.length });
+      }
     }
 
     const weekly = weekStarts.map(() => 0);

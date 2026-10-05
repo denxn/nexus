@@ -27,10 +27,16 @@ export function FlawsAnalytics({ items }: { items: ProblemFindings[] }) {
                   <strong>{p.title}</strong>
                   <span className={styles.muted}>{p.occurrenceCount} in 90 days</span>
                 </div>
-                <div className={styles.weeks} aria-label="Occurrences per week">
+                <div
+                  className={styles.weeks}
+                  role="img"
+                  aria-label={`Occurrences per week, oldest to newest: ${p.weekly.map((n, i) => `${WEEK_LABELS[i]} ${n}`).join(", ")}`}
+                >
                   {p.weekly.map((count, i) => (
                     <div key={WEEK_LABELS[i]} className={styles.week}>
-                      <i style={{ height: `${Math.max((count / max) * 100, count > 0 ? 12 : 4)}%` }} />
+                      <div className={styles.barArea}>
+                        <i style={{ height: `${Math.max((count / max) * 100, count > 0 ? 8 : 3)}%` }} />
+                      </div>
                       <span>{count}</span>
                       <small>{WEEK_LABELS[i]}</small>
                     </div>

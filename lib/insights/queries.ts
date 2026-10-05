@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import { getGoals } from "@/lib/plan/queries";
+import type { GoalView } from "@/lib/plan/types";
 import { isOverdue } from "@/lib/plan/todoOrder";
-import { getDailyStats } from "@/lib/stats";
-import { getTargets } from "@/lib/targets";
+import { getDailyStats, type DayStats } from "@/lib/stats";
+import { getTargets, type Targets } from "@/lib/targets";
 import { addDays, dayKey } from "@/lib/time";
 import { buildBrief } from "./brief";
 import { daysSinceWorkout, lastNightSleep, nearestDueGoal, strongestFlaw } from "./briefInput";
@@ -17,6 +18,8 @@ export type InsightOptions = {
   perf: PerfPeriod;
   correlation: { x: CorrMetric; y: CorrMetric; lag: 0 | 1 };
   greeting: string;
+  /** Data the caller already fetched (stats must span at least insightSpan(perf) days); avoids reading it twice. */
+  prefetched?: { stats: DayStats[]; targets: Targets; goals: GoalView[] };
 };
 
 /** Everything the insight cards need, derived from one stats fetch. */
@@ -26,10 +29,14 @@ export async function getInsightData(opts: InsightOptions) {
   const since = new Date(`${addDays(today, -91)}T00:00:00Z`);
 
   const [stats, targets, todoRows, goals, problemRows] = await Promise.all([
-    getDailyStats(span),
-    getTargets(),
-    prisma.todo.findMany({ select: { dueDate: true, done: true, priority: true } }),
-    getGoals(),
+    opts.prefetched?.stats ?? getDailyStats(span),
+    opts.prefetched?.targets ?? getTargets(),
+    // Open todos (for the overdue count) plus those due recently (for the score's 7-day window).
+    prisma.todo.findMany({
+      where: { OR: [{ done: false }, { dueDate: { gte: addDays(today, -60) } }] },
+      select: { dueDate: true, done: true, priority: true },
+    }),
+    opts.prefetched?.goals ?? getGoals(),
     prisma.problem.findMany({
       select: {
         id: true,
@@ -59,6 +66,7 @@ export async function getInsightData(opts: InsightOptions) {
     lastNightSleepH: lastNightSleep(stats, today),
     sleepTarget: targets.sleepH,
     daysSinceWorkout: daysSinceWorkout(stats, today),
+    activeDays: stats.filter(isActiveDay).length,
   });
 
   const { x, y, lag } = opts.correlation;

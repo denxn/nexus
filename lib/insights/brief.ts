@@ -9,7 +9,10 @@ export type BriefInput = {
   goal: { title: string; daysLeft: number; pct: number } | null;
   lastNightSleepH: number | null;
   sleepTarget: number;
+  /** Days since the last workout in the data; null means none at all in the window. */
   daysSinceWorkout: number | null;
+  /** Days with at least one entry in the window. */
+  activeDays: number;
 };
 
 const MAX_LINES = 4;
@@ -41,7 +44,8 @@ export function buildBrief(input: BriefInput): { headline: string; lines: string
   }
   if (input.lastNightSleepH !== null && input.lastNightSleepH < input.sleepTarget) {
     lines.push("Aim for an earlier night tonight");
-  } else if (input.daysSinceWorkout !== null && input.daysSinceWorkout >= 3) {
+  } else if (input.daysSinceWorkout === null ? input.activeDays >= 3 : input.daysSinceWorkout >= 3) {
+    // null means no workout in the whole window; only nudge once there is enough history to say so.
     lines.push("A workout today would keep your week on track");
   }
 

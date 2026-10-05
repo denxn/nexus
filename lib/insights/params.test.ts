@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { CORR_METRICS, insightSpan, parseCorrelationParams, parseLag, parsePerf } from "./params";
+import { CORR_METRICS, insightSpan, normalizeCorrelation, parseCorrelationParams, parseLag, parsePerf } from "./params";
 
 describe("parsePerf", () => {
   test("accepts week, month and year", () => {
@@ -66,5 +66,16 @@ describe("insightSpan", () => {
 
   test("the year view needs two years of days to compare with the previous year", () => {
     expect(insightSpan("year")).toBeGreaterThanOrEqual(730);
+  });
+});
+
+describe("normalizeCorrelation", () => {
+  test("two different metrics are left alone", () => {
+    expect(normalizeCorrelation("mood", "sleep")).toEqual({ x: "mood", y: "sleep" });
+  });
+
+  test("equal metrics become two different ones with the same rule as the URL parser", () => {
+    expect(normalizeCorrelation("study", "study")).toEqual({ x: "study", y: "sleep" });
+    expect(normalizeCorrelation("mood", "mood")).toEqual({ x: "mood", y: "study" });
   });
 });

@@ -141,6 +141,22 @@ describe("captionFor", () => {
     expect(captionFor("sleep", "study", 0, 20, 0.7)).toContain("strong");
   });
 
+  test("the strength word follows the printed (rounded) r", () => {
+    const at = (r: number) => captionFor("sleep", "study", 0, 20, r);
+    expect(at(0.4996)).toContain("moderate");
+    expect(at(0.4996)).toContain("0.50");
+    expect(at(0.6996)).toContain("strong");
+    expect(at(0.6996)).toContain("0.70");
+    expect(at(0.4949)).toContain("weak");
+    expect(at(0.4949)).toContain("0.49");
+    expect(at(-0.4996)).toContain("moderate");
+  });
+
+  test("a printed r of 0.30 is a link, 0.29 is not", () => {
+    expect(captionFor("sleep", "study", 0, 20, 0.2996)).toContain("weak");
+    expect(captionFor("sleep", "study", 0, 20, 0.2949)).toBe("No clear link");
+  });
+
   test("lag 1 says the next day", () => {
     expect(captionFor("sleep", "study", 1, 20, 0.6)).toContain("the next day");
   });
@@ -154,6 +170,14 @@ describe("correlate and strongestCorrelation", () => {
     expect(c.r).toBeCloseTo(1, 10);
     expect(c.trend).not.toBeNull();
     expect(c.caption).toContain("Higher sleep goes with higher study");
+  });
+
+  test("no trend line when r is null (constant y), even though x varies", () => {
+    const s = series(12, (i) => ({ sleepH: 5 + i * 0.5, mood: 7 }));
+    const c = correlate(s, "sleep", "mood", 0);
+    expect(c.n).toBe(12);
+    expect(c.r).toBeNull();
+    expect(c.trend).toBeNull();
   });
 
   test("with no data the result is empty and safe", () => {

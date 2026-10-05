@@ -1,13 +1,13 @@
-type Props = { pct: number; color: string; size?: number };
+type Props = { pct: number; color: string; size?: number; label?: string };
 
 /** Progress ring: the arc caps at 100%, the label shows the real percentage. */
-export function Ring({ pct, color, size = 76 }: Props) {
+export function Ring({ pct, color, size = 76, label }: Props) {
   const stroke = 7;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const filled = (Math.min(Math.max(pct, 0), 100) / 100) * c;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${pct}%`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label ?? `${pct}%`}>
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
       {filled > 0 && (
         <circle

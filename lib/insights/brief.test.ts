@@ -13,6 +13,7 @@ const base: BriefInput = {
   lastNightSleepH: null,
   sleepTarget: 8,
   daysSinceWorkout: null,
+  activeDays: 0,
 };
 const brief = (over: Partial<BriefInput> = {}) => buildBrief({ ...base, ...over });
 
@@ -69,6 +70,16 @@ describe("buildBrief", () => {
     expect(brief({ lastNightSleepH: 8, daysSinceWorkout: 3 }).lines).toEqual(["A workout today would keep your week on track"]);
     expect(brief({ lastNightSleepH: 8, daysSinceWorkout: 2 }).lines).toEqual([]);
     expect(brief({ daysSinceWorkout: 10 }).lines).toEqual(["A workout today would keep your week on track"]);
+  });
+
+  test("no workout in the whole window still gets the nudge once there are at least 3 active days", () => {
+    expect(brief({ daysSinceWorkout: null, activeDays: 3 }).lines).toEqual(["A workout today would keep your week on track"]);
+    expect(brief({ daysSinceWorkout: null, activeDays: 2 }).lines).toEqual([]);
+    expect(brief({ daysSinceWorkout: null, activeDays: 40 }).lines).toEqual(["A workout today would keep your week on track"]);
+  });
+
+  test("the sleep suggestion still wins over the no-workout nudge", () => {
+    expect(brief({ lastNightSleepH: 5, daysSinceWorkout: null, activeDays: 30 }).lines).toEqual(["Aim for an earlier night tonight"]);
   });
 
   test("lines follow the priority order", () => {

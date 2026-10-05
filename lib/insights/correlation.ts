@@ -77,19 +77,24 @@ export function trendLine(pairs: Pair[]): Trend | null {
   return { slope, intercept: my - slope * mx };
 }
 
+/** r as printed: two decimals. Direction, strength and the threshold all use this value so they agree with the text. */
+const printed = (r: number) => Math.round(r * 100) / 100;
+
 export function captionFor(x: CorrMetric, y: CorrMetric, lag: 0 | 1, n: number, r: number | null): string {
   if (n < MIN_PAIRS) return "Not enough data yet";
-  if (r === null || Math.abs(r) < MIN_ABS_R) return "No clear link";
-  const abs = Math.abs(r);
+  if (r === null || Math.abs(printed(r)) < MIN_ABS_R) return "No clear link";
+  const shown = printed(r);
+  const abs = Math.abs(shown);
   const strength = abs < 0.5 ? "weak" : abs < 0.7 ? "moderate" : "strong";
-  const direction = r > 0 ? "higher" : "lower";
-  return `Higher ${x} goes with ${direction} ${y}${lag === 1 ? " the next day" : ""} (${strength}, r = ${r.toFixed(2)})`;
+  const direction = shown > 0 ? "higher" : "lower";
+  return `Higher ${x} goes with ${direction} ${y}${lag === 1 ? " the next day" : ""} (${strength}, r = ${shown.toFixed(2)})`;
 }
 
 export function correlate(stats: DayStats[], x: CorrMetric, y: CorrMetric, lag: 0 | 1) {
   const pairs = correlationPairs(stats, x, y, lag);
   const r = pearson(pairs);
-  return { pairs, n: pairs.length, r, trend: trendLine(pairs), caption: captionFor(x, y, lag, pairs.length, r) };
+  // A trend line only makes sense when r exists (no variance in y means no relationship to draw).
+  return { pairs, n: pairs.length, r, trend: r === null ? null : trendLine(pairs), caption: captionFor(x, y, lag, pairs.length, r) };
 }
 
 const PRESETS: [CorrMetric, CorrMetric][] = [
@@ -106,7 +111,7 @@ export function strongestCorrelation(
   let best: { x: CorrMetric; y: CorrMetric; r: number; n: number; caption: string } | null = null;
   for (const [x, y] of PRESETS) {
     const c = correlate(stats, x, y, 0);
-    if (c.r === null || c.n < MIN_PAIRS || Math.abs(c.r) < MIN_ABS_R) continue;
+    if (c.r === null || c.n < MIN_PAIRS || Math.abs(printed(c.r)) < MIN_ABS_R) continue;
     if (!best || Math.abs(c.r) > Math.abs(best.r)) best = { x, y, r: c.r, n: c.n, caption: c.caption };
   }
   return best;

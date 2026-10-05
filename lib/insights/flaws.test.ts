@@ -69,6 +69,13 @@ describe("findings", () => {
     expect(at14.findings.map((f) => f.metric)).not.toContain("study");
   });
 
+  test("the 15% threshold applies to the unrounded difference (14.6% is not reported), the display stays rounded", () => {
+    const below = flawsAnalytics(stats30(100, afterOverrides(85.4)), [problem(OCC)], TODAY)[0];
+    expect(below.findings.map((f) => f.metric)).not.toContain("study");
+    const above = flawsAnalytics(stats30(100, afterOverrides(84.6)), [problem(OCC)], TODAY)[0];
+    expect(above.findings.find((f) => f.metric === "study")!.changePct).toBe(-15);
+  });
+
   test("an increase is reported with a positive change", () => {
     const [p] = flawsAnalytics(stats30(100, afterOverrides(150)), [problem(OCC)], TODAY);
     expect(p.findings.find((f) => f.metric === "study")!.changePct).toBe(50);

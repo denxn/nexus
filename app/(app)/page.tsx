@@ -13,7 +13,7 @@ import insights from "@/components/insights.module.css";
 import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
-import { parseCorrelationParams, parsePerf } from "@/lib/insights/params";
+import { insightSpan, parseCorrelationParams, parsePerf } from "@/lib/insights/params";
 import { withParams } from "@/lib/insights/present";
 import { getInsightData } from "@/lib/insights/queries";
 import { getCalendarData, getGoals } from "@/lib/plan/queries";
@@ -55,14 +55,21 @@ export default async function DashboardPage({
   const perf = parsePerf(params.perf);
   const correlation = parseCorrelationParams(params);
   const today = dayKey(new Date());
-  const [stats, targets, recent, goals, calendar, insight] = await Promise.all([
-    getDailyStats(range),
+  // One read of the stats, targets and goals feeds the cards, the timeline and the insights.
+  const [allStats, targets, goals, recent, calendar] = await Promise.all([
+    getDailyStats(insightSpan(perf)),
     getTargets(),
-    getRecentEntries(8),
     getGoals(),
+    getRecentEntries(8),
     getCalendarData(monthKeyOf(today), today),
-    getInsightData({ perf, correlation, greeting: "Status report" }),
   ]);
+  const insight = await getInsightData({
+    perf,
+    correlation,
+    greeting: "Status report",
+    prefetched: { stats: allStats, targets, goals },
+  });
+  const stats = allStats.slice(-range);
   const cards = summarizeCards(stats, targets);
   const series = toTimelineSeries(stats, targets);
 
@@ -117,7 +124,7 @@ export default async function DashboardPage({
 
       <div className={dash.row}>
         <GoalsCard goals={goals} />
-        <WeekGridCard rows={weekGrid(stats, targets, today)} />
+        <WeekGridCard rows={weekGrid(allStats, targets, today)} />
         <MiniCalendar today={today} markers={calendar.markers} agenda={calendar.agenda} />
       </div>
 

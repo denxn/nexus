@@ -27,10 +27,13 @@ export function parseCorrelationParams(p: { cx?: Param; cy?: Param; lag?: Param 
   y: CorrMetric;
   lag: 0 | 1;
 } {
-  const x = parseMetric(p.cx, "sleep");
-  let y = parseMetric(p.cy, "study");
-  if (y === x) y = x === "study" ? "sleep" : "study";
+  const { x, y } = normalizeCorrelation(parseMetric(p.cx, "sleep"), parseMetric(p.cy, "study"));
   return { x, y, lag: parseLag(p.lag) };
+}
+
+/** Comparing a metric with itself is meaningless, so the second one is swapped for another. */
+export function normalizeCorrelation(x: CorrMetric, y: CorrMetric): { x: CorrMetric; y: CorrMetric } {
+  return y === x ? { x, y: x === "study" ? "sleep" : "study" } : { x, y };
 }
 
 /**

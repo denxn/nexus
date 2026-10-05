@@ -14,7 +14,7 @@ export function ScoreCard({ score, parts, streak }: { score: number; parts: Scor
     <section className={`glass ${styles.card}`}>
       <h2 className={styles.title}>Discipline score</h2>
       <div className={styles.scoreBody}>
-        <Ring pct={score} color="var(--accent)" size={92} />
+        <Ring pct={score} color="var(--accent)" size={92} label={`Discipline score ${score} out of 100`} />
         <div className={styles.parts}>
           {LABELS.map(([key, label]) => {
             const pct = Math.round(parts[key] * 100);

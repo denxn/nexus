@@ -262,21 +262,27 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  align-items: end;
-  height: 84px;
 }
 
 .week {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   gap: 2px;
-  height: 100%;
   font-size: 12px;
 }
 
-.week i {
+/* A fixed-height area so bar heights stay proportional; the count and label sit below it. */
+.barArea {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.barArea i {
+  display: block;
   width: 70%;
   max-width: 36px;
   border-radius: 4px 4px 0 0;
