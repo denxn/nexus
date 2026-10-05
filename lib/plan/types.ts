@@ -36,6 +36,10 @@ export type TodoView = {
   goalTitle: string | null;
   problemId: string | null;
   problemTitle: string | null;
+  repeat: "NONE" | "DAILY" | "WEEKLY" | "MONTHLY";
+  repeatInterval: number;
+  repeatWeekdays: number[];
+  repeatUntil: string | null;
 };
 
 export type EventView = {

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { withSaveErrors } from "@/lib/entries/save";
 import { eventSchema } from "@/lib/plan/schemas";
 import { requireSession } from "@/lib/require-session";
+import { isDayKey } from "@/lib/time";
 
 const revalidate = () => {
   revalidatePath("/calendar");
@@ -31,7 +32,18 @@ export async function updateEvent(id: string, _prev: ActionState, formData: Form
   const parsed = parseWith(eventSchema, values);
   if (!("data" in parsed)) return parsed.state;
   const state = await withSaveErrors(values, async () => {
-    await prisma.event.update({ where: { id: parseId(id) }, data: { ...parsed.data, endsAt: parsed.data.endsAt ?? null } });
+    const { endsAt, repeatUntil, remindMinutes, ...rest } = parsed.data;
+    await prisma.event.update({
+      where: { id: parseId(id) },
+      data: {
+        ...rest,
+        endsAt: endsAt ?? null,
+        repeatUntil: repeatUntil ?? null,
+        remindMinutes: remindMinutes ?? null,
+        // Turning repetition off also forgets the skipped days.
+        ...(rest.repeat === "NONE" && { skippedDays: [] }),
+      },
+    });
   });
   if (state.ok) revalidate();
   return state;
@@ -40,5 +52,17 @@ export async function updateEvent(id: string, _prev: ActionState, formData: Form
 export async function deleteEvent(id: string): Promise<void> {
   await requireSession();
   await prisma.event.deleteMany({ where: { id: parseId(id) } });
+  revalidate();
+}
+
+/** Hides one occurrence of a recurring event (a day of the series) without touching the rest. */
+export async function skipEventDay(id: string, day: string): Promise<void> {
+  await requireSession();
+  const eventId = parseId(id);
+  if (!isDayKey(day)) throw new Error("Invalid day");
+  await prisma.event.updateMany({
+    where: { id: eventId, repeat: { not: "NONE" }, NOT: { skippedDays: { has: day } } },
+    data: { skippedDays: { push: day } },
+  });
   revalidate();
 }

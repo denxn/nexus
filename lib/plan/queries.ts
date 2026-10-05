@@ -102,6 +102,10 @@ export async function getTodos(): Promise<TodoView[]> {
     goalTitle: t.goal?.title ?? null,
     problemId: t.problemId,
     problemTitle: t.problem?.title ?? null,
+    repeat: t.repeat,
+    repeatInterval: t.repeatInterval,
+    repeatWeekdays: t.repeatWeekdays,
+    repeatUntil: t.repeatUntil,
   }));
 }
 

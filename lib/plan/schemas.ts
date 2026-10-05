@@ -91,19 +91,86 @@ export const occurrenceSchema = z.object({
   occurredAt: occurredAtField,
 });
 
+// ---- Recurrence (shared by events and to-dos) -----------------------------
+
+/** "0,2,4" (from a hidden form field) -> [0, 2, 4]; anything that is not an integer stays NaN so validation fails. */
+const parseWeekdays = (v: unknown) => {
+  const raw = blankToUndefined(v);
+  if (raw === undefined) return [];
+  if (Array.isArray(raw)) return raw;
+  return String(raw)
+    .split(",")
+    .map((t) => (t.trim() === "" ? NaN : Number(t)));
+};
+
+const intervalMessage = "Enter 1 to 99";
+const repeatShape = {
+  repeat: z.preprocess(blankToUndefined, z.enum(["NONE", "DAILY", "WEEKLY", "MONTHLY"]).default("NONE")),
+  repeatInterval: z.preprocess(
+    blankToUndefined,
+    z.coerce.number({ error: intervalMessage }).int(intervalMessage).min(1, intervalMessage).max(99, intervalMessage).default(1),
+  ),
+  repeatWeekdays: z.preprocess(
+    parseWeekdays,
+    z.array(z.number({ error: "Pick weekdays" }).int("Pick weekdays").min(0, "Pick weekdays").max(6, "Pick weekdays")).default([]),
+  ),
+  repeatUntil: optionalDayKey,
+};
+
+type RepeatInput = {
+  repeat: "NONE" | "DAILY" | "WEEKLY" | "MONTHLY";
+  repeatInterval: number;
+  repeatWeekdays: number[];
+  repeatUntil?: string | undefined;
+};
+
+/** Clears the fields that do not apply to the chosen repeat and checks `until` against the first day. */
+function normalizeRepeat(v: RepeatInput, firstDay: string | undefined, ctx: z.RefinementCtx) {
+  const recurring = v.repeat !== "NONE";
+  if (recurring && v.repeatUntil && firstDay && v.repeatUntil < firstDay) {
+    ctx.issues.push({ code: "custom", message: "Until must not be before the start", input: v.repeatUntil, path: ["repeatUntil"] });
+  }
+  return {
+    repeat: v.repeat,
+    repeatInterval: recurring ? v.repeatInterval : 1,
+    repeatWeekdays: v.repeat === "WEEKLY" ? [...new Set(v.repeatWeekdays)].sort((a, b) => a - b) : [],
+    repeatUntil: recurring ? v.repeatUntil : undefined,
+  };
+}
+
 // ---- Todo -----------------------------------------------------------------
 
-export const todoSchema = z.object({
-  title: requiredText(120),
-  dueDate: optionalDayKey,
-  priority: z.preprocess(blankToUndefined, z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM")),
-  goalId: optionalId,
-  problemId: optionalId,
-});
+export const todoSchema = z
+  .object({
+    title: requiredText(120),
+    dueDate: optionalDayKey,
+    priority: z.preprocess(blankToUndefined, z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM")),
+    goalId: optionalId,
+    problemId: optionalId,
+    ...repeatShape,
+  })
+  .transform((v, ctx) => {
+    const rule = normalizeRepeat(v, v.dueDate, ctx);
+    if (rule.repeat !== "NONE" && !v.dueDate) {
+      ctx.issues.push({ code: "custom", message: "Set a due date to repeat", input: v.dueDate, path: ["dueDate"] });
+    }
+    return {
+      title: v.title,
+      dueDate: v.dueDate,
+      priority: v.priority,
+      goalId: v.goalId,
+      problemId: v.problemId,
+      ...rule,
+      // Remembered so a monthly to-do created on the 31st returns to the 31st after a clamped month.
+      repeatMonthDay: rule.repeat === "MONTHLY" && v.dueDate ? Number(v.dueDate.slice(8)) : null,
+    };
+  });
 
 // ---- Event ----------------------------------------------------------------
 
 const time = z.string({ error: "Enter a time" }).regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Enter a time");
+
+export const REMIND_OPTIONS = [5, 10, 15, 30, 60, 1440] as const;
 
 export const eventSchema = z
   .object({
@@ -111,6 +178,14 @@ export const eventSchema = z
     date: z.string({ error: "Enter a date" }).refine(isDayKey, "Enter a valid date"),
     startTime: time,
     endTime: z.preprocess(blankToUndefined, time.optional()),
+    remindMinutes: z.preprocess(
+      blankToUndefined,
+      z.coerce
+        .number({ error: "Choose a reminder time" })
+        .refine((n) => (REMIND_OPTIONS as readonly number[]).includes(n), "Choose a reminder time")
+        .optional(),
+    ),
+    ...repeatShape,
   })
   .transform((v, ctx) => {
     const startsAt = romeLocalToDate(`${v.date}T${v.startTime}`);
@@ -120,5 +195,6 @@ export const eventSchema = z
       ctx.issues.push({ code: "custom", message: "End must be after the start", input: v.endTime, path: ["endTime"] });
       return z.NEVER;
     }
-    return { title: v.title, startsAt, endsAt };
+    const rule = normalizeRepeat(v, v.date, ctx);
+    return { title: v.title, startsAt, endsAt, remindMinutes: v.remindMinutes, ...rule };
   });

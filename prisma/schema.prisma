@@ -67,6 +67,13 @@ enum ProblemStatus {
   SOLVED
 }
 
+enum Repeat {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 enum Priority {
   LOW
   MEDIUM
@@ -123,6 +130,13 @@ model Todo {
   problem   Problem?  @relation(fields: [problemId], references: [id], onDelete: SetNull)
   createdAt DateTime  @default(now())
 
+  // Recurrence (see lib/recurrence): the due date is the anchor and rolls forward when ticked.
+  repeat         Repeat  @default(NONE)
+  repeatInterval Int     @default(1)
+  repeatWeekdays Int[]
+  repeatUntil    String?
+  repeatMonthDay Int?
+
   @@index([dueDate])
 }
 
@@ -134,6 +148,14 @@ model Event {
   source     Source    @default(MANUAL)
   externalId String?
   createdAt  DateTime  @default(now())
+
+  // Recurrence: the series is stored once and expanded on read at the same Rome wall-clock time.
+  repeat         Repeat   @default(NONE)
+  repeatInterval Int      @default(1)
+  repeatWeekdays Int[]
+  repeatUntil    String?
+  skippedDays    String[]
+  remindMinutes  Int?
 
   @@unique([source, externalId])
   @@index([startsAt])

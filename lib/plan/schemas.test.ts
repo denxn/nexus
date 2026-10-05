@@ -158,3 +158,84 @@ describe("stage 4a: goal targets that round to zero minutes", () => {
     expect(goalSchema.safeParse(measured("MEAL", "0.5")).success).toBe(true);
   });
 });
+
+describe("stage 4d: event recurrence and reminders", () => {
+  const base = { title: "Lecture", date: "2026-10-07", startTime: "09:00" };
+  const ok = (over: Record<string, unknown>) => eventSchema.safeParse({ ...base, ...over });
+
+  test("defaults: no repeat, interval 1, no weekdays, no until, no reminder", () => {
+    const r = ok({});
+    expect(r.success && r.data).toMatchObject({ repeat: "NONE", repeatInterval: 1, repeatWeekdays: [], repeatUntil: undefined, remindMinutes: undefined });
+  });
+
+  test("a weekly rule with weekdays from a comma list (sorted, de-duplicated)", () => {
+    const r = ok({ repeat: "WEEKLY", repeatInterval: "2", repeatWeekdays: "4,0,2,0", repeatUntil: "2026-12-20" });
+    expect(r.success && r.data).toMatchObject({ repeat: "WEEKLY", repeatInterval: 2, repeatWeekdays: [0, 2, 4], repeatUntil: "2026-12-20" });
+  });
+
+  test("interval must be 1 to 99", () => {
+    for (const bad of ["0", "100", "-1", "1.5", "x"]) expect(fieldErrors(ok({ repeat: "DAILY", repeatInterval: bad }))).toContain("repeatInterval");
+    expect(ok({ repeat: "DAILY", repeatInterval: "99" }).success).toBe(true);
+  });
+
+  test("weekday 7 or junk is rejected", () => {
+    expect(fieldErrors(ok({ repeat: "WEEKLY", repeatWeekdays: "7" }))).toContain("repeatWeekdays");
+    expect(fieldErrors(ok({ repeat: "WEEKLY", repeatWeekdays: "a,b" }))).toContain("repeatWeekdays");
+  });
+
+  test("until before the first day is rejected; the same day is allowed", () => {
+    expect(fieldErrors(ok({ repeat: "DAILY", repeatUntil: "2026-10-06" }))).toContain("repeatUntil");
+    expect(ok({ repeat: "DAILY", repeatUntil: "2026-10-07" }).success).toBe(true);
+    expect(fieldErrors(ok({ repeat: "DAILY", repeatUntil: "2026-02-30" }))).toContain("repeatUntil");
+  });
+
+  test("with no repeat the other repeat fields are cleared", () => {
+    const r = ok({ repeat: "NONE", repeatInterval: "5", repeatWeekdays: "1,2", repeatUntil: "2026-12-01" });
+    expect(r.success && r.data).toMatchObject({ repeat: "NONE", repeatInterval: 1, repeatWeekdays: [], repeatUntil: undefined });
+  });
+
+  test("weekdays only apply to weekly rules", () => {
+    const r = ok({ repeat: "DAILY", repeatWeekdays: "1,2" });
+    expect(r.success && r.data.repeatWeekdays).toEqual([]);
+  });
+
+  test("reminder minutes: 5, 10, 15, 30, 60 and 1440 only; blank means none", () => {
+    for (const good of ["5", "10", "15", "30", "60", "1440"]) expect(ok({ remindMinutes: good }).success).toBe(true);
+    for (const bad of ["7", "0", "-5", "x", "2880"]) expect(fieldErrors(ok({ remindMinutes: bad }))).toContain("remindMinutes");
+    const blank = ok({ remindMinutes: "" });
+    expect(blank.success && blank.data.remindMinutes).toBeUndefined();
+  });
+});
+
+describe("stage 4d: to-do recurrence", () => {
+  const ok = (over: Record<string, unknown>) => todoSchema.safeParse({ title: "Water plants", ...over });
+
+  test("defaults to no repeat", () => {
+    const r = ok({});
+    expect(r.success && r.data).toMatchObject({ repeat: "NONE", repeatInterval: 1, repeatWeekdays: [], repeatMonthDay: null });
+  });
+
+  test("a recurring to-do needs a due date", () => {
+    expect(fieldErrors(ok({ repeat: "WEEKLY" }))).toContain("dueDate");
+    expect(ok({ repeat: "WEEKLY", dueDate: "2026-10-05" }).success).toBe(true);
+  });
+
+  test("until must not be before the due date", () => {
+    expect(fieldErrors(ok({ repeat: "DAILY", dueDate: "2026-10-05", repeatUntil: "2026-10-04" }))).toContain("repeatUntil");
+  });
+
+  test("a monthly to-do remembers the intended day of the month", () => {
+    const r = ok({ repeat: "MONTHLY", dueDate: "2026-01-31" });
+    expect(r.success && r.data.repeatMonthDay).toBe(31);
+    const weekly = ok({ repeat: "WEEKLY", dueDate: "2026-01-31" });
+    expect(weekly.success && weekly.data.repeatMonthDay).toBeNull();
+  });
+
+  test("interval, weekdays and no-repeat clearing behave like events", () => {
+    expect(fieldErrors(ok({ repeat: "DAILY", dueDate: "2026-10-05", repeatInterval: "0" }))).toContain("repeatInterval");
+    const r = ok({ repeat: "WEEKLY", dueDate: "2026-10-05", repeatWeekdays: "2,0" });
+    expect(r.success && r.data.repeatWeekdays).toEqual([0, 2]);
+    const none = ok({ repeat: "NONE", dueDate: "2026-10-05", repeatInterval: "4", repeatWeekdays: "1" });
+    expect(none.success && none.data).toMatchObject({ repeatInterval: 1, repeatWeekdays: [] });
+  });
+});
