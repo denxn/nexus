@@ -175,11 +175,22 @@ export async function getCalendarData(month: string, day: string) {
     events: occurrences.filter((o) => o.day === day).map((o) => toView(o.row, o)),
     todos: todos
       .filter((t) => t.dueDate === day)
-      .map((t) => ({ id: t.id, title: t.title, done: t.done, priority: t.priority })),
+      .map((t) => ({ id: t.id, title: t.title, done: t.done, priority: t.priority, recurring: t.repeat !== "NONE" })),
     logged: summarizeDay(day, ents),
     notes: notes
       .filter((n) => n.day === day)
       .map((n) => ({ id: n.id, title: n.title, preview: notePreview(n.body) })),
   };
   return { markers: buildMarkers(days, occurrences, todos, ents, notes), agenda };
+}
+
+/** Open to-dos whose due date has passed (oldest first), for the Today card. */
+export async function getOverdueTodos(today: string) {
+  const rows = await prisma.todo.findMany({
+    where: { done: false, dueDate: { lt: today } },
+    orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
+    take: 20,
+    select: { id: true, title: true, dueDate: true, repeat: true },
+  });
+  return rows.map((t) => ({ id: t.id, title: t.title, dueDate: t.dueDate as string, recurring: t.repeat !== "NONE" }));
 }

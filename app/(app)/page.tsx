@@ -7,6 +7,7 @@ import { PerformanceCard } from "@/components/PerformanceCard";
 import { RecentActivity } from "@/components/RecentActivity";
 import { ScoreCard } from "@/components/ScoreCard";
 import { StatCard } from "@/components/StatCard";
+import { TodayCard } from "@/components/TodayCard";
 import { WeekGridCard } from "@/components/WeekGridCard";
 import dash from "@/components/dashboard.module.css";
 import insights from "@/components/insights.module.css";
@@ -16,7 +17,7 @@ import { getDailyStats, summarizeCards } from "@/lib/stats";
 import { insightSpan, parseCorrelationParams, parsePerf } from "@/lib/insights/params";
 import { withParams } from "@/lib/insights/present";
 import { getInsightData } from "@/lib/insights/queries";
-import { getCalendarData, getGoals } from "@/lib/plan/queries";
+import { getCalendarData, getGoals, getOverdueTodos } from "@/lib/plan/queries";
 import { weekGrid } from "@/lib/plan/weekGrid";
 import { parseRange } from "@/lib/range";
 import { getTargets } from "@/lib/targets";
@@ -56,12 +57,13 @@ export default async function DashboardPage({
   const correlation = parseCorrelationParams(params);
   const today = dayKey(new Date());
   // One read of the stats, targets and goals feeds the cards, the timeline and the insights.
-  const [allStats, targets, goals, recent, calendar] = await Promise.all([
+  const [allStats, targets, goals, recent, calendar, overdue] = await Promise.all([
     getDailyStats(insightSpan(perf)),
     getTargets(),
     getGoals(),
     getRecentEntries(8),
     getCalendarData(monthKeyOf(today), today),
+    getOverdueTodos(today),
   ]);
   const insight = await getInsightData({
     perf,
@@ -84,6 +86,8 @@ export default async function DashboardPage({
         <BriefCard brief={insight.brief} />
         <ScoreCard score={insight.score} parts={insight.parts} streak={insight.streak} />
       </div>
+
+      <TodayCard agenda={calendar.agenda} overdue={overdue} nowMs={Date.now()} />
 
       <div className={styles.cards}>
         <StatCard

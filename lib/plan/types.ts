@@ -63,7 +63,7 @@ export type EventView = {
 
 export type DayAgendaData = {
   events: EventView[];
-  todos: { id: string; title: string; done: boolean; priority: "LOW" | "MEDIUM" | "HIGH" }[];
+  todos: { id: string; title: string; done: boolean; priority: "LOW" | "MEDIUM" | "HIGH"; recurring: boolean }[];
   logged: { type: string; text: string }[];
   notes: { id: string; title: string | null; preview: string }[];
 };
