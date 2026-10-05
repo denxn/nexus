@@ -31,6 +31,12 @@ export default async function NotesPage({
 
   return (
     <div className={styles.page}>
+      <NotesPanel
+        groups={groups}
+        defaultDay={parsed.day ?? dayKey(new Date())}
+        filtered={!!(parsed.q || parsed.day)}
+        toolbar={
+          <>
       <form method="get" action="/notes" role="search" className={styles.search}>
         <input type="search" name="q" defaultValue={parsed.q ?? ""} placeholder="Search notes" aria-label="Search notes" />
         {parsed.day && <input type="hidden" name="day" value={parsed.day} />}
@@ -51,8 +57,9 @@ export default async function NotesPage({
           )}
         </div>
       )}
-
-      <NotesPanel groups={groups} defaultDay={parsed.day ?? dayKey(new Date())} filtered={!!(parsed.q || parsed.day)} />
+          </>
+        }
+      />
 
       <Pagination page={pagination.page} pages={pagination.pages} total={pagination.total} hrefFor={(p) => href({ page: p })} noun="notes" />
     </div>

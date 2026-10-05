@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { createEvent, deleteEvent, updateEvent } from "@/app/actions/events";
 import { toggleTodo } from "@/app/actions/todos";
@@ -7,6 +8,7 @@ import { initialActionState } from "@/lib/action-state";
 import type { DayAgendaData, EventView } from "@/lib/plan/types";
 import { toRomeLocalInput } from "@/lib/time";
 import forms from "../forms.module.css";
+import { NoteForm } from "../notes/NoteForm";
 import { Sheet } from "../Sheet";
 import styles from "./calendar.module.css";
 
@@ -16,14 +18,18 @@ const heading = (day: string) =>
 
 export function DayAgenda({ day, agenda }: { day: string; agenda: DayAgendaData }) {
   const [editing, setEditing] = useState<EventView | "new" | null>(null);
+  const [addingNote, setAddingNote] = useState(false);
   const [pending, startTransition] = useTransition();
-  const empty = !agenda.events.length && !agenda.todos.length && !agenda.logged.length;
+  const empty = !agenda.events.length && !agenda.todos.length && !agenda.logged.length && !agenda.notes.length;
 
   return (
     <section className={`glass ${styles.agenda}`} aria-busy={pending}>
       <div className={styles.agendaHead}>
         <h2>{heading(day)}</h2>
-        <button type="button" className={styles.add} onClick={() => setEditing("new")}>+ Add</button>
+        <span className={styles.rowBtns}>
+          <button type="button" className={styles.add} onClick={() => setEditing("new")}>+ Add</button>
+          <button type="button" className={styles.addAlt} onClick={() => setAddingNote(true)}>+ Note</button>
+        </span>
       </div>
 
       {empty && <p className={styles.muted}>Nothing planned or logged for this day.</p>}
@@ -55,11 +61,32 @@ export function DayAgenda({ day, agenda }: { day: string; agenda: DayAgendaData 
         ))}
       </ul>
 
+      {agenda.notes.length > 0 && (
+        <div className={styles.logged}>
+          <h3>Notes</h3>
+          <ul>
+            {agenda.notes.map((n) => (
+              <li key={n.id}>
+                <strong>{n.title || "Untitled"}</strong>
+                {n.preview && <span className={styles.muted}> {n.preview}</span>}
+              </li>
+            ))}
+          </ul>
+          <Link href={`/notes?day=${day}`} className={styles.openLink}>Open in Notes</Link>
+        </div>
+      )}
+
       {agenda.logged.length > 0 && (
         <div className={styles.logged}>
           <h3>Logged</h3>
           <ul>{agenda.logged.map((l) => <li key={l.type}>{l.text}</li>)}</ul>
         </div>
+      )}
+
+      {addingNote && (
+        <Sheet title="Add note" onClose={() => setAddingNote(false)}>
+          <NoteForm note={null} defaultDay={day} onDone={() => setAddingNote(false)} />
+        </Sheet>
       )}
 
       {editing && (

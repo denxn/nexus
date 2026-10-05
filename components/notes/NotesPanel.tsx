@@ -16,10 +16,13 @@ export function NotesPanel({
   groups,
   defaultDay,
   filtered,
+  toolbar,
 }: {
   groups: { day: string; notes: NoteView[] }[];
   defaultDay: string;
   filtered: boolean;
+  /** The search form and filter chips, shown between the header and the list. */
+  toolbar: React.ReactNode;
 }) {
   const [editing, setEditing] = useState<NoteView | "new" | null>(null);
   const [pending, startTransition] = useTransition();
@@ -30,6 +33,8 @@ export function NotesPanel({
         <h1 className={styles.h1}>Notes</h1>
         <button type="button" className={styles.primary} onClick={() => setEditing("new")}>+ Add note</button>
       </div>
+
+      {toolbar}
 
       {groups.length === 0 ? (
         <p className={styles.muted}>

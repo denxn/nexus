@@ -49,4 +49,5 @@ export type DayAgendaData = {
   events: EventView[];
   todos: { id: string; title: string; done: boolean; priority: "LOW" | "MEDIUM" | "HIGH" }[];
   logged: { type: string; text: string }[];
+  notes: { id: string; title: string | null; preview: string }[];
 };

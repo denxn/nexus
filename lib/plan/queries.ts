@@ -3,6 +3,7 @@ import type { EntryLike } from "@/lib/stats";
 import { addDays, dayKey, monthMatrix } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
 import { sortCompleted } from "./todoOrder";
+import { notePreview } from "@/lib/notes/preview";
 import { buildMarkers, summarizeDay } from "./calendar";
 import type { DayAgendaData, GoalView, ProblemView, TodoView } from "./types";
 
@@ -121,12 +122,17 @@ export async function getCalendarData(month: string, day: string) {
   const from = new Date(`${addDays(first, -1)}T00:00:00Z`);
   const to = new Date(`${addDays(last, 2)}T00:00:00Z`);
 
-  const [events, todos, entries] = await Promise.all([
+  const [events, todos, entries, notes] = await Promise.all([
     prisma.event.findMany({ where: { startsAt: { gte: from, lt: to } }, orderBy: { startsAt: "asc" } }),
     prisma.todo.findMany({ where: { dueDate: { gte: first, lte: last } }, orderBy: { createdAt: "asc" } }),
     prisma.entry.findMany({
       where: { occurredAt: { gte: from, lt: to } },
       select: { type: true, value: true, occurredAt: true },
+    }),
+    prisma.note.findMany({
+      where: { day: { gte: first, lte: last } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { id: true, day: true, title: true, body: true },
     }),
   ]);
   const inRange = (d: Date) => {
@@ -149,6 +155,9 @@ export async function getCalendarData(month: string, day: string) {
       .filter((t) => t.dueDate === day)
       .map((t) => ({ id: t.id, title: t.title, done: t.done, priority: t.priority })),
     logged: summarizeDay(day, ents),
+    notes: notes
+      .filter((n) => n.day === day)
+      .map((n) => ({ id: n.id, title: n.title, preview: notePreview(n.body) })),
   };
-  return { markers: buildMarkers(days, evs, todos, ents), agenda };
+  return { markers: buildMarkers(days, evs, todos, ents, notes), agenda };
 }

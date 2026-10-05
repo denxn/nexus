@@ -53,6 +53,7 @@ export function MonthGrid({
                 {m?.event && <b style={{ background: "var(--accent)" }} />}
                 {m?.todo && <b style={{ background: "var(--c-mood)" }} />}
                 {m?.logged && <b style={{ background: "var(--c-workout)" }} />}
+                {m?.note && <b style={{ background: "var(--c-sleep)" }} />}
               </i>
             </Link>
           );

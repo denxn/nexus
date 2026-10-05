@@ -199,3 +199,24 @@
   gap: 4px;
   font-size: 14px;
 }
+
+.addAlt {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.openLink {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.logged li {
+  overflow-wrap: anywhere;
+}
