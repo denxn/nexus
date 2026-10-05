@@ -40,10 +40,21 @@ describe("sessions", () => {
     expect(await verifySession(await createSession())).toBe(true);
   });
 
-  test("a tampered token fails", async () => {
-    const token = await createSession();
-    const last = token.slice(-1) === "A" ? "B" : "A";
-    expect(await verifySession(token.slice(0, -1) + last)).toBe(false);
+  test("a token with a changed signature fails (every run, not only when the last character matters)", async () => {
+    // The last base64url character of an HS256 signature carries unused bits, so flip one in the middle.
+    for (let i = 0; i < 20; i++) {
+      const [header, payload, signature] = (await createSession()).split(".");
+      const flipped = signature[10] === "A" ? "B" : "A";
+      const tampered = `${header}.${payload}.${signature.slice(0, 10)}${flipped}${signature.slice(11)}`;
+      expect(await verifySession(tampered)).toBe(false);
+    }
+  });
+
+  test("a token with a changed payload fails", async () => {
+    const [header, payload, signature] = (await createSession()).split(".");
+    const other = Buffer.from(JSON.stringify({ iat: 1, exp: 9999999999 })).toString("base64url");
+    expect(other).not.toBe(payload);
+    expect(await verifySession(`${header}.${other}.${signature}`)).toBe(false);
   });
 
   test("an expired token fails", async () => {
