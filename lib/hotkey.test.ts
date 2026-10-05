@@ -52,4 +52,10 @@ describe("shouldOpenQuickLog", () => {
   test("a null target still opens", () => {
     expect(press("n", null)).toBe(true);
   });
+
+  test("a keydown event without a key (browser autofill) does not throw and does not open", () => {
+    const e = { key: undefined as unknown as string, target: { tagName: "BODY" }, metaKey: false, ctrlKey: false, altKey: false };
+    expect(() => shouldOpenQuickLog(e)).not.toThrow();
+    expect(shouldOpenQuickLog(e)).toBe(false);
+  });
 });

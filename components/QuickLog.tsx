@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { createEntry, updateEntry } from "@/app/actions/entries";
@@ -39,7 +40,15 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
       setSheet((s) => ({ open: true, entry, nonce: (s.open ? s.nonce : 0) + 1 })),
     [],
   );
-  const close = useCallback(() => setSheet({ open: false }), []);
+  // A save in flight must not be abandoned: Escape, the backdrop and Cancel are ignored meanwhile.
+  const savingRef = useRef(false);
+  const onPendingChange = useCallback((pending: boolean) => {
+    savingRef.current = pending;
+  }, []);
+  const finish = useCallback(() => setSheet({ open: false }), []);
+  const close = useCallback(() => {
+    if (!savingRef.current) setSheet({ open: false });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -71,7 +80,7 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
             className={`glass ${styles.sheet}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <LogForm key={sheet.nonce} entry={sheet.entry} onDone={close} />
+            <LogForm key={sheet.nonce} entry={sheet.entry} onDone={finish} onCancel={close} onPendingChange={onPendingChange} />
           </div>
         </div>
       )}
@@ -79,7 +88,17 @@ export function QuickLogProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LogForm({ entry, onDone }: { entry: EntryRow | null; onDone: () => void }) {
+function LogForm({
+  entry,
+  onDone,
+  onCancel,
+  onPendingChange,
+}: {
+  entry: EntryRow | null;
+  onDone: () => void;
+  onCancel: () => void;
+  onPendingChange: (pending: boolean) => void;
+}) {
   const action = entry ? updateEntry.bind(null, entry.id) : createEntry;
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [type, setType] = useState<EntryTypeName>(
@@ -90,6 +109,12 @@ function LogForm({ entry, onDone }: { entry: EntryRow | null; onDone: () => void
   const [initialWhen] = useState(() =>
     toRomeLocalInput(entry ? new Date(entry.occurredAt) : new Date()),
   );
+
+  // Declared before the success effect so the "not saving" state is reported before the sheet closes.
+  useEffect(() => {
+    onPendingChange(pending);
+    return () => onPendingChange(false);
+  }, [pending, onPendingChange]);
 
   useEffect(() => {
     if (state.ok) onDone();
@@ -163,7 +188,7 @@ function LogForm({ entry, onDone }: { entry: EntryRow | null; onDone: () => void
       )}
 
       <div className={styles.actions}>
-        <button type="button" className={styles.cancel} onClick={onDone}>
+        <button type="button" className={styles.cancel} onClick={onCancel} disabled={pending}>
           Cancel
         </button>
         <button type="submit" className={styles.save} disabled={pending}>
