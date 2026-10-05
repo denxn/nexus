@@ -1,7 +1,9 @@
 import { BriefCard } from "@/components/BriefCard";
+import { CorrelationCard } from "@/components/CorrelationCard";
 import { GoalsCard } from "@/components/GoalsCard";
 import { LifeTimeline } from "@/components/LifeTimeline";
 import { MiniCalendar } from "@/components/MiniCalendar";
+import { PerformanceCard } from "@/components/PerformanceCard";
 import { RecentActivity } from "@/components/RecentActivity";
 import { ScoreCard } from "@/components/ScoreCard";
 import { StatCard } from "@/components/StatCard";
@@ -12,6 +14,7 @@ import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
 import { parseCorrelationParams, parsePerf } from "@/lib/insights/params";
+import { withParams } from "@/lib/insights/present";
 import { getInsightData } from "@/lib/insights/queries";
 import { getCalendarData, getGoals } from "@/lib/plan/queries";
 import { weekGrid } from "@/lib/plan/weekGrid";
@@ -116,6 +119,15 @@ export default async function DashboardPage({
         <GoalsCard goals={goals} />
         <WeekGridCard rows={weekGrid(stats, targets, today)} />
         <MiniCalendar today={today} markers={calendar.markers} agenda={calendar.agenda} />
+      </div>
+
+      <div className={insights.row}>
+        <PerformanceCard
+          metrics={insight.performance}
+          period={perf}
+          hrefFor={(p) => withParams("/", params, { perf: p })}
+        />
+        <CorrelationCard data={insight.correlation} />
       </div>
 
       <RecentActivity entries={recent} />

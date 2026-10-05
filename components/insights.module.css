@@ -113,3 +113,120 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+.periods,
+.lag {
+  display: flex;
+  gap: 4px;
+}
+
+.periods a,
+.lag button {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.periods a.periodOn,
+.lag button.periodOn {
+  color: var(--text);
+  background: rgba(61, 169, 255, 0.14);
+  border-color: rgba(61, 169, 255, 0.4);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+
+.tileLabel {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.change {
+  font-size: 22px;
+}
+
+.up {
+  color: var(--c-workout);
+}
+
+.down {
+  color: var(--danger);
+}
+
+.flat,
+.none {
+  color: var(--muted);
+}
+
+.new {
+  color: var(--accent);
+}
+
+.tileValue {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.pick select {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: #0d1424;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.scatter {
+  min-width: 0;
+}
+
+.caption {
+  font-size: 14px;
+}
+
+.tip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: #0d1424;
+  font-size: 12px;
+}
