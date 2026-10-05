@@ -32,7 +32,9 @@ type Sheets = { kind: "edit"; problem: ProblemView | null } | { kind: "occurrenc
 export function ProblemsPanel({ problems }: { problems: ProblemView[] }) {
   const [sheet, setSheet] = useState<Sheets>(null);
   const [pending, startTransition] = useTransition();
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const close = () => setSheet(null);
+  const expand = (id: string) => setExpanded((prev) => new Set(prev).add(id));
 
   return (
     <section>
@@ -81,13 +83,18 @@ export function ProblemsPanel({ problems }: { problems: ProblemView[] }) {
                   <p className={styles.meta}>None logged.</p>
                 ) : (
                   <ul className={styles.occ}>
-                    {p.occurrences.map((o) => (
+                    {(expanded.has(p.id) ? p.occurrences : p.occurrences.slice(0, 10)).map((o) => (
                       <li key={o.id}>
                         <span>{when.format(new Date(o.occurredAt))}{o.note && ` · ${o.note}`}</span>
                         <button type="button" onClick={() => startTransition(() => deleteOccurrence(o.id))} aria-label="Delete occurrence">×</button>
                       </li>
                     ))}
                   </ul>
+                )}
+                {!expanded.has(p.id) && p.occurrences.length > 10 && (
+                  <button type="button" className={styles.showAll} onClick={() => expand(p.id)}>
+                    Show all ({p.occurrenceCount > p.occurrences.length ? `latest ${p.occurrences.length} of ${p.occurrenceCount}` : p.occurrences.length})
+                  </button>
                 )}
               </details>
             </li>

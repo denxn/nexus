@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import type { EntryLike } from "@/lib/stats";
 import { addDays, dayKey, monthMatrix } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
+import { sortCompleted } from "./todoOrder";
 import { buildMarkers, summarizeDay } from "./calendar";
 import type { DayAgendaData, GoalView, ProblemView, TodoView } from "./types";
 
@@ -55,7 +56,7 @@ export async function getProblems(): Promise<ProblemView[]> {
   const rows = await prisma.problem.findMany({
     include: {
       _count: { select: { occurrences: true } },
-      occurrences: { orderBy: { occurredAt: "desc" }, take: 10 },
+      occurrences: { orderBy: { occurredAt: "desc" }, take: 100 },
     },
   });
   return rows
@@ -89,20 +90,18 @@ export async function getTodos(): Promise<TodoView[]> {
     include: { goal: { select: { title: true } }, problem: { select: { title: true } } },
     orderBy: { createdAt: "asc" },
   });
-  const time = (d: Date | null) => d?.getTime() ?? 0;
-  return rows
-    .sort((a, b) => (a.done && b.done ? time(b.doneAt) - time(a.doneAt) : 0))
-    .map((t) => ({
-      id: t.id,
-      title: t.title,
-      dueDate: t.dueDate,
-      priority: t.priority,
-      done: t.done,
-      goalId: t.goalId,
-      goalTitle: t.goal?.title ?? null,
-      problemId: t.problemId,
-      problemTitle: t.problem?.title ?? null,
-    }));
+  const ordered = [...rows.filter((t) => !t.done), ...sortCompleted(rows.filter((t) => t.done))];
+  return ordered.map((t) => ({
+    id: t.id,
+    title: t.title,
+    dueDate: t.dueDate,
+    priority: t.priority,
+    done: t.done,
+    goalId: t.goalId,
+    goalTitle: t.goal?.title ?? null,
+    problemId: t.problemId,
+    problemTitle: t.problem?.title ?? null,
+  }));
 }
 
 export async function getGoalAndProblemOptions() {

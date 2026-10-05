@@ -127,6 +127,9 @@ function GoalForm({ goal, onDone }: { goal: GoalView | null; onDone: () => void 
       ? String(goal.measuredType === "STUDY" || goal.measuredType === "WORKOUT" ? goal.targetValue / 60 : goal.targetValue)
       : "";
 
+  // The target is typed in the current type's unit, so changing the type clears it.
+  const [target, setTarget] = useState(val("target", storedTarget));
+
   return (
     <form action={formAction} className={forms.form}>
       <div className={forms.pills} role="radiogroup" aria-label="Goal kind">
@@ -168,7 +171,15 @@ function GoalForm({ goal, onDone }: { goal: GoalView | null; onDone: () => void 
           <div className={forms.row}>
             <label className={forms.field}>
               <span>Measure</span>
-              <select name="measuredType" value={type} onChange={(e) => setType(e.target.value as typeof type)} aria-invalid={!!err.measuredType}>
+              <select
+                name="measuredType"
+                value={type}
+                onChange={(e) => {
+                  setType(e.target.value as typeof type);
+                  setTarget("");
+                }}
+                aria-invalid={!!err.measuredType}
+              >
                 {TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
@@ -177,7 +188,7 @@ function GoalForm({ goal, onDone }: { goal: GoalView | null; onDone: () => void 
             </label>
             <label className={forms.field}>
               <span>Target ({unit})</span>
-              <input name="target" inputMode="decimal" defaultValue={val("target", storedTarget)} aria-invalid={!!err.target} />
+              <input name="target" inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} aria-invalid={!!err.target} />
               {err.target && <em role="alert">{err.target}</em>}
             </label>
           </div>

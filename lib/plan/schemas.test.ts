@@ -124,3 +124,37 @@ describe("eventSchema", () => {
     expect(eventSchema.safeParse({ title: "x".repeat(81), date: "2026-10-05", startTime: "09:00" }).success).toBe(false);
   });
 });
+
+describe("stage 4a: event instants across the DST gap", () => {
+  test("02:30 to 03:15 on the spring-forward day is rejected (02:30 does not exist, so the end would precede the start)", () => {
+    const r = eventSchema.safeParse({ title: "x", date: "2026-03-29", startTime: "02:30", endTime: "03:15" });
+    expect(fieldErrors(r)).toContain("endTime");
+  });
+
+  test("a normal 09:00 to 10:00 event still passes", () => {
+    expect(eventSchema.safeParse({ title: "x", date: "2026-10-05", startTime: "09:00", endTime: "10:00" }).success).toBe(true);
+  });
+
+  test("an end equal to the start is still rejected", () => {
+    expect(fieldErrors(eventSchema.safeParse({ title: "x", date: "2026-10-05", startTime: "09:00", endTime: "09:00" }))).toContain("endTime");
+  });
+});
+
+describe("stage 4a: goal targets that round to zero minutes", () => {
+  const measured = (measuredType: string, target: string) => ({ kind: "MEASURED", title: "x", measuredType, target, startDate: "2026-10-01" });
+
+  test("STUDY and WORKOUT targets under half a minute are rejected on target", () => {
+    expect(fieldErrors(goalSchema.safeParse(measured("STUDY", "0.005")))).toContain("target");
+    expect(fieldErrors(goalSchema.safeParse(measured("WORKOUT", "0.005")))).toContain("target");
+  });
+
+  test("0.02 hours (1.2 minutes, stored as 1) passes", () => {
+    const r = goalSchema.safeParse(measured("STUDY", "0.02"));
+    expect(r.success && r.data.targetValue).toBe(1);
+  });
+
+  test("SLEEP and MEAL targets are not affected by the minute rule", () => {
+    expect(goalSchema.safeParse(measured("SLEEP", "0.005")).success).toBe(true);
+    expect(goalSchema.safeParse(measured("MEAL", "0.5")).success).toBe(true);
+  });
+});

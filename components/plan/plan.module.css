@@ -202,3 +202,14 @@
   color: var(--muted);
   margin-bottom: 10px;
 }
+
+.showAll {
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+}

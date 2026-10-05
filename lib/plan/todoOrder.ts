@@ -33,3 +33,15 @@ export function orderTodos<T extends TodoLike>(
     .map(({ t }) => t);
   return { open, completed: todos.filter((t) => t.done) };
 }
+
+/** Completed items newest-completed first (missing doneAt last); stable on ties; does not mutate. */
+export function sortCompleted<T extends { doneAt: Date | null }>(todos: T[]): T[] {
+  return todos
+    .map((t, index) => ({ t, index }))
+    .sort((a, b) => {
+      const ta = a.t.doneAt?.getTime() ?? -Infinity;
+      const tb = b.t.doneAt?.getTime() ?? -Infinity;
+      return ta !== tb ? (tb > ta ? 1 : -1) : a.index - b.index;
+    })
+    .map(({ t }) => t);
+}

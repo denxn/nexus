@@ -23,7 +23,7 @@ export type ProblemView = {
   severity: number;
   status: "ACTIVE" | "IMPROVING" | "SOLVED";
   occurrenceCount: number;
-  occurrences: { id: string; occurredAt: string; note: string | null }[]; // newest first, latest 10
+  occurrences: { id: string; occurredAt: string; note: string | null }[]; // newest first, latest 100
 };
 
 export type TodoView = {

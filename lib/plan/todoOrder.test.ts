@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { isOverdue, orderTodos, type TodoLike } from "./todoOrder";
+import { isOverdue, orderTodos, sortCompleted, type TodoLike } from "./todoOrder";
 
 const t = (id: string, over: Partial<TodoLike> = {}): TodoLike => ({
   id,
@@ -60,5 +60,27 @@ describe("isOverdue", () => {
 
   test("undated is never overdue", () => {
     expect(isOverdue(t("a"), TODAY)).toBe(false);
+  });
+});
+
+describe("sortCompleted", () => {
+  const d = (id: string, iso: string | null) => ({ id, doneAt: iso ? new Date(iso) : null });
+
+  test("newest completion first, missing doneAt last", () => {
+    const out = sortCompleted([d("old", "2026-10-01T10:00:00Z"), d("none", null), d("new", "2026-10-03T10:00:00Z"), d("mid", "2026-10-02T10:00:00Z")]);
+    expect(out.map((x) => x.id)).toEqual(["new", "mid", "old", "none"]);
+  });
+
+  test("ties keep input order and the input is not mutated", () => {
+    const input = [d("a", "2026-10-01T10:00:00Z"), d("b", "2026-10-01T10:00:00Z"), d("c", "2026-10-02T10:00:00Z")];
+    const out = sortCompleted(input);
+    expect(out.map((x) => x.id)).toEqual(["c", "a", "b"]);
+    expect(input.map((x) => x.id)).toEqual(["a", "b", "c"]);
+  });
+
+  test("the mixed order from the old comparator bug is now correct", () => {
+    // done(t=1), done(t=3), done(t=2) must come out 3, 2, 1 whatever else surrounds them
+    const out = sortCompleted([d("t1", "2026-10-01T00:00:00Z"), d("t3", "2026-10-03T00:00:00Z"), d("t2", "2026-10-02T00:00:00Z")]);
+    expect(out.map((x) => x.id)).toEqual(["t3", "t2", "t1"]);
   });
 });

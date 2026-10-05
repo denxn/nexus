@@ -48,19 +48,24 @@ export const goalSchema = z
     if (v.target === undefined) ctx.addIssue({ code: "custom", path: ["target"], message: "Enter a target" });
     if (!v.startDate) ctx.addIssue({ code: "custom", path: ["startDate"], message: "Choose a start date" });
   })
-  .transform((v) => {
+  .transform((v, ctx) => {
     const base = { title: v.title, category: v.category, deadline: v.deadline };
     if (v.kind === "MANUAL") {
       return { ...base, kind: "MANUAL" as const, progress: v.progress ?? 0, measuredType: null, targetValue: null, startDate: null };
     }
     const type = v.measuredType!;
-    const minutes = type === "STUDY" || type === "WORKOUT";
+    const inMinutes = type === "STUDY" || type === "WORKOUT";
+    const targetValue = inMinutes ? Math.round(v.target! * 60) : v.target!;
+    if (inMinutes && targetValue < 1) {
+      ctx.issues.push({ code: "custom", message: "Enter at least 1 minute", input: v.target, path: ["target"] });
+      return z.NEVER;
+    }
     return {
       ...base,
       kind: "MEASURED" as const,
       progress: null,
       measuredType: type,
-      targetValue: minutes ? Math.round(v.target! * 60) : v.target!,
+      targetValue,
       startDate: v.startDate!,
     };
   });
@@ -107,13 +112,13 @@ export const eventSchema = z
     startTime: time,
     endTime: z.preprocess(blankToUndefined, time.optional()),
   })
-  .superRefine((v, ctx) => {
-    if (v.endTime && v.endTime <= v.startTime) {
-      ctx.addIssue({ code: "custom", path: ["endTime"], message: "End must be after the start" });
+  .transform((v, ctx) => {
+    const startsAt = romeLocalToDate(`${v.date}T${v.startTime}`);
+    const endsAt = v.endTime ? romeLocalToDate(`${v.date}T${v.endTime}`) : undefined;
+    // Compare instants, not clock strings: on the spring-forward day 02:30 does not exist.
+    if (endsAt && endsAt.getTime() <= startsAt.getTime()) {
+      ctx.issues.push({ code: "custom", message: "End must be after the start", input: v.endTime, path: ["endTime"] });
+      return z.NEVER;
     }
-  })
-  .transform((v) => ({
-    title: v.title,
-    startsAt: romeLocalToDate(`${v.date}T${v.startTime}`),
-    endsAt: v.endTime ? romeLocalToDate(`${v.date}T${v.endTime}`) : undefined,
-  }));
+    return { title: v.title, startsAt, endsAt };
+  });

@@ -24,4 +24,12 @@ describe("withSaveErrors", () => {
     expect(state.errors?.form).toBe("That entry no longer exists.");
     expect(state.values).toEqual(values);
   });
+
+  test("a foreign-key error (P2003, parent deleted elsewhere) also says the entry no longer exists", async () => {
+    const state = await withSaveErrors(values, async () => {
+      throw Object.assign(new Error("fk"), { code: "P2003" });
+    });
+    expect(state.errors?.form).toBe("That entry no longer exists.");
+    expect(state.values).toEqual(values);
+  });
 });

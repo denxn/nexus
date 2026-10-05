@@ -9,7 +9,9 @@ export async function withSaveErrors(
     await save();
     return { ok: true };
   } catch (error) {
-    const missing = (error as { code?: string } | null)?.code === "P2025";
+    // P2025: record not found; P2003: foreign key (its parent was deleted elsewhere).
+    const code = (error as { code?: string } | null)?.code;
+    const missing = code === "P2025" || code === "P2003";
     return {
       ok: false,
       errors: {
