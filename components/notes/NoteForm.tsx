@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useId } from "react";
 import { createNote, updateNote } from "@/app/actions/notes";
 import { initialActionState } from "@/lib/action-state";
 import type { NoteView } from "@/lib/notes/queries";
@@ -13,6 +13,7 @@ export function NoteForm({ note, defaultDay, onDone }: { note: NoteView | null; 
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const val = (name: string, fallback = "") => state.values?.[name] ?? fallback;
   const err = state.errors ?? {};
+  const bodyId = useId();
 
   useEffect(() => {
     if (state.ok) onDone();
@@ -30,11 +31,12 @@ export function NoteForm({ note, defaultDay, onDone }: { note: NoteView | null; 
         <input name="title" defaultValue={val("title", note?.title ?? "")} aria-invalid={!!err.title} />
         {err.title && <em role="alert">{err.title}</em>}
       </label>
-      <label className={forms.field}>
-        <span>Note</span>
-        <textarea name="body" autoFocus className={styles.textarea} defaultValue={val("body", note?.body ?? "")} aria-invalid={!!err.body} />
+      {/* Not wrapped in the label: a textarea's contents would become part of its own accessible name. */}
+      <div className={forms.field}>
+        <label htmlFor={bodyId}>Note</label>
+        <textarea id={bodyId} name="body" autoFocus className={styles.textarea} defaultValue={val("body", note?.body ?? "")} aria-invalid={!!err.body} />
         {err.body && <em role="alert">{err.body}</em>}
-      </label>
+      </div>
       {err.form && <p role="alert" className={forms.formError}>{err.form}</p>}
       <div className={forms.actions}>
         <button type="button" className={forms.cancel} onClick={onDone}>Cancel</button>

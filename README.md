@@ -43,6 +43,7 @@ A personal life dashboard: log workouts, study, sleep, meals and mood, then see 
 - **Calendar** (`/calendar`) shows a month grid and a day agenda with your events, to-dos due and what you logged. Add events with **+ Add**.
 - The dashboard shows a Daily brief and a Discipline score at the top, then Goals, This Week and a mini Calendar under the timeline, and a Performance overview and Activity correlation chart below.
 - **Workouts, Study and Sleep** (`/workouts`, `/study`, `/sleep`) show the full history of one entry type: a range (7 days to All), summary tiles (sessions and totals; study days, best day and top subjects; average sleep, debt and average wake-up time), a daily chart with the target line, a note filter and a paginated list with edit and delete.
+- **Notes** (`/notes`) are free-text entries per day: add, edit and delete, search (title or body, case-insensitive, `%` and `_` literal), a day filter and pagination. Days with notes get a marker on the calendar, and the day agenda lists them with a "+ Note" button.
 - **Analytics** (`/analytics`) has the full Performance overview, a correlation explorer (any two metrics, same day or next day) and Flaws analytics: how a problem's occurrences relate to sleep, study and mood on the following day.
 - The brief, score and insights are computed from your own data. Nothing leaves the app, and no API key is needed.
 - Press **N** (or tap **+**) to log an entry. Entries can be edited or deleted from Recent Activity.
@@ -71,4 +72,4 @@ npx playwright test
 
 ## Stages
 
-Stage 1 covers login, quick-log, stat cards and the Life Timeline. Stage 2 adds Plan (Goals, Problems, To-do), the Calendar and the This Week grid. Stage 3 adds the discipline score, daily brief, performance overview, correlation chart and Flaws analytics. Stage 4a adds release readiness (login throttling, error pages, a deploy guide) and 4b the Workouts, Study and Sleep pages.
+Stage 1 covers login, quick-log, stat cards and the Life Timeline. Stage 2 adds Plan (Goals, Problems, To-do), the Calendar and the This Week grid. Stage 3 adds the discipline score, daily brief, performance overview, correlation chart and Flaws analytics. Stage 4a adds release readiness (login throttling, error pages, a deploy guide) 4b the Workouts, Study and Sleep pages, and 4c Notes.
