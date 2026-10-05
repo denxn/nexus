@@ -48,4 +48,17 @@ describe("noteSchema", () => {
     const r = parse({ body: "\n  line one\n\nline two  \n" });
     expect(r.success && r.data.body).toBe("line one\n\nline two");
   });
+
+  test("browser line breaks (\\r\\n and lone \\r) are stored as \\n", () => {
+    const r = parse({ body: "one\r\ntwo\rthree\nfour" });
+    expect(r.success && r.data.body).toBe("one\ntwo\nthree\nfour");
+  });
+
+  test("the length limit counts normalized line breaks, not the extra carriage returns", () => {
+    // 2500 lines of "ab" separated by CRLF is 2500*2 + 2499 characters after normalization (7499), so too long;
+    // 1666 pairs of two-character lines stays under 5000 once the \r characters are gone
+    const lines = Array.from({ length: 1666 }, () => "ab").join("\r\n");
+    expect(lines.length).toBeGreaterThan(4990);
+    expect(parse({ body: lines }).success).toBe(true);
+  });
 });

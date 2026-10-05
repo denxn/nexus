@@ -1,6 +1,7 @@
 import type { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { groupNotesByDay } from "./group";
+import { escapeLike } from "./like";
 
 export const NOTES_PAGE_SIZE = 20;
 
@@ -14,12 +15,14 @@ export type NoteView = {
 
 /** Notes matching the filters, newest day first, one page at a time (the page is clamped into range). */
 export async function getNotes(params: { q: string | null; day: string | null; page: number }) {
+  // Prisma passes `contains` straight into LIKE, so wildcard characters in the query must be escaped.
+  const needle = params.q ? escapeLike(params.q) : null;
   const where: Prisma.NoteWhereInput = {
     ...(params.day && { day: params.day }),
-    ...(params.q && {
+    ...(needle && {
       OR: [
-        { title: { contains: params.q, mode: "insensitive" } },
-        { body: { contains: params.q, mode: "insensitive" } },
+        { title: { contains: needle, mode: "insensitive" } },
+        { body: { contains: needle, mode: "insensitive" } },
       ],
     }),
   };
