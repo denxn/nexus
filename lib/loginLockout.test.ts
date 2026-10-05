@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { clientIp, evaluateLockout, parseLimits, type Limits } from "./loginLockout";
+import { clientIp, evaluateLockout, lockoutMessage, parseLimits, type Limits } from "./loginLockout";
 
 const LIMITS: Limits = { perIp: 5, global: 20, windowMinutes: 15 };
 const NOW = new Date("2026-10-05T12:00:00Z");
@@ -115,5 +115,12 @@ describe("clientIp", () => {
     expect(clientIp(headers({ "x-real-ip": "5.6.7.8" }))).toBe("5.6.7.8");
     expect(clientIp(headers({}))).toBe("unknown");
     expect(clientIp(headers({ "x-forwarded-for": "  " }))).toBe("unknown");
+  });
+});
+
+describe("lockoutMessage", () => {
+  test("singular and plural minutes", () => {
+    expect(lockoutMessage(1)).toBe("Too many attempts. Try again in 1 minute.");
+    expect(lockoutMessage(15)).toBe("Too many attempts. Try again in 15 minutes.");
   });
 });

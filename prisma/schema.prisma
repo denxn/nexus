@@ -138,3 +138,11 @@ model Event {
   @@unique([source, externalId])
   @@index([startsAt])
 }
+
+model LoginAttempt {
+  id String   @id @default(cuid())
+  ip String
+  at DateTime @default(now())
+
+  @@index([at])
+}

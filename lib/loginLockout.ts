@@ -52,3 +52,7 @@ export function evaluateLockout(
   const msLeft = Math.max(...ends) - now.getTime();
   return { locked: true, retryAfterMinutes: Math.max(1, Math.ceil(msLeft / 60_000)) };
 }
+
+export function lockoutMessage(minutes: number): string {
+  return `Too many attempts. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`;
+}
