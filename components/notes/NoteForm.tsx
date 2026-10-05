@@ -6,6 +6,7 @@ import { initialActionState } from "@/lib/action-state";
 import type { NoteView } from "@/lib/notes/queries";
 import forms from "../forms.module.css";
 import styles from "./notes.module.css";
+import { submitWith } from "../submitWith";
 
 /** Add or edit a note. Errors are inline and the typed values are kept. */
 export function NoteForm({ note, defaultDay, onDone }: { note: NoteView | null; defaultDay: string; onDone: () => void }) {
@@ -20,7 +21,7 @@ export function NoteForm({ note, defaultDay, onDone }: { note: NoteView | null; 
   }, [state.ok, onDone]);
 
   return (
-    <form action={formAction} className={forms.form}>
+    <form onSubmit={submitWith(formAction)} className={forms.form}>
       <label className={forms.field}>
         <span>Date</span>
         <input name="day" type="date" required defaultValue={val("day", note?.day ?? defaultDay)} aria-invalid={!!err.day} />

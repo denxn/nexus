@@ -133,7 +133,7 @@ model Todo {
   // Recurrence (see lib/recurrence): the due date is the anchor and rolls forward when ticked.
   repeat         Repeat  @default(NONE)
   repeatInterval Int     @default(1)
-  repeatWeekdays Int[]
+  repeatWeekdays Int[]    @default([])
   repeatUntil    String?
   repeatMonthDay Int?
 
@@ -152,9 +152,9 @@ model Event {
   // Recurrence: the series is stored once and expanded on read at the same Rome wall-clock time.
   repeat         Repeat   @default(NONE)
   repeatInterval Int      @default(1)
-  repeatWeekdays Int[]
+  repeatWeekdays Int[]    @default([])
   repeatUntil    String?
-  skippedDays    String[]
+  skippedDays    String[] @default([])
   remindMinutes  Int?
 
   @@unique([source, externalId])

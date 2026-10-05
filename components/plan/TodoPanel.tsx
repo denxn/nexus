@@ -1,14 +1,17 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { createTodo, deleteTodo, toggleTodo, updateTodo } from "@/app/actions/todos";
+import { createTodo, deleteTodo, skipTodo, toggleTodo, updateTodo } from "@/app/actions/todos";
 import { initialActionState } from "@/lib/action-state";
 import { isOverdue, orderTodos } from "@/lib/plan/todoOrder";
+import { repeatLabel } from "@/lib/recurrence/label";
 import type { TodoView } from "@/lib/plan/types";
 import { addDays } from "@/lib/time";
 import forms from "../forms.module.css";
+import { RepeatFields } from "../RepeatFields";
 import { Sheet } from "../Sheet";
 import styles from "./plan.module.css";
+import { submitWith } from "../submitWith";
 
 type Option = { id: string; title: string };
 
@@ -56,12 +59,16 @@ export function TodoPanel({
               {dueLabel(t.dueDate, todayKey)}
             </span>
           )}
+          {t.repeat !== "NONE" && !t.done && ` · ↻ ${repeatLabel({ repeat: t.repeat, interval: t.repeatInterval, weekdays: t.repeatWeekdays, until: t.repeatUntil, monthDay: null })}`}
           {t.goalTitle && ` · goal: ${t.goalTitle}`}
           {t.problemTitle && ` · problem: ${t.problemTitle}`}
         </small>
       </div>
       <span className={styles.btns}>
         <button type="button" onClick={() => setEditing(t)}>Edit</button>
+        {t.repeat !== "NONE" && !t.done && (
+          <button type="button" disabled={pending} onClick={() => startTransition(() => skipTodo(t.id))}>Skip</button>
+        )}
         <button
           type="button"
           disabled={pending}
@@ -128,7 +135,7 @@ function TodoForm({
     id && title && !list.some((o) => o.id === id) ? [{ id, title }, ...list] : list;
 
   return (
-    <form action={formAction} className={forms.form}>
+    <form onSubmit={submitWith(formAction)} className={forms.form}>
       <label className={forms.field}>
         <span>What needs doing?</span>
         <input name="title" autoFocus defaultValue={val("title", todo?.title ?? "")} aria-invalid={!!err.title} />
@@ -169,6 +176,15 @@ function TodoForm({
           </select>
         </label>
       </div>
+      <RepeatFields
+        defaults={{
+          repeat: val("repeat", todo?.repeat ?? "NONE"),
+          interval: val("repeatInterval", String(todo?.repeatInterval ?? 1)),
+          weekdays: val("repeatWeekdays", todo?.repeatWeekdays.join(",") ?? ""),
+          until: val("repeatUntil", todo?.repeatUntil ?? ""),
+        }}
+        err={err}
+      />
       {err.form && <p role="alert" className={forms.formError}>{err.form}</p>}
       <div className={forms.actions}>
         <button type="button" className={forms.cancel} onClick={onDone}>Cancel</button>

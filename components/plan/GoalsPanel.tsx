@@ -9,6 +9,7 @@ import { dayKey } from "@/lib/time";
 import forms from "../forms.module.css";
 import { Sheet } from "../Sheet";
 import styles from "./plan.module.css";
+import { submitWith } from "../submitWith";
 
 const TYPES = [
   { value: "STUDY", label: "Study", unit: "hours" },
@@ -131,7 +132,7 @@ function GoalForm({ goal, onDone }: { goal: GoalView | null; onDone: () => void 
   const [target, setTarget] = useState(val("target", storedTarget));
 
   return (
-    <form action={formAction} className={forms.form}>
+    <form onSubmit={submitWith(formAction)} className={forms.form}>
       <div className={forms.pills} role="radiogroup" aria-label="Goal kind">
         {(["MANUAL", "MEASURED"] as const).map((k) => (
           <label key={k} className={`${forms.pill} ${kind === k ? forms.pillOn : ""}`}>

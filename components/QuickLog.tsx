@@ -16,6 +16,7 @@ import { ENTRY_TYPES, typeMeta, type EntryRow, type EntryTypeName } from "@/lib/
 import { shouldOpenQuickLog } from "@/lib/hotkey";
 import { toRomeLocalInput } from "@/lib/time";
 import styles from "./QuickLog.module.css";
+import { submitWith } from "./submitWith";
 
 type Ctx = { openNew: (type?: EntryTypeName) => void; openEdit: (entry: EntryRow) => void };
 const QuickLogContext = createContext<Ctx | null>(null);
@@ -126,7 +127,7 @@ function LogForm({
   const err = state.errors ?? {};
 
   return (
-    <form action={formAction} className={styles.form}>
+    <form onSubmit={submitWith(formAction)} className={styles.form}>
       <h2 className={styles.heading}>{entry ? "Edit entry" : "Log an entry"}</h2>
 
       <div className={styles.pills} role="radiogroup" aria-label="Entry type">

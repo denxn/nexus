@@ -15,6 +15,7 @@ import { toRomeLocalInput } from "@/lib/time";
 import forms from "../forms.module.css";
 import { Sheet } from "../Sheet";
 import styles from "./plan.module.css";
+import { submitWith } from "../submitWith";
 
 const STATUSES = ["ACTIVE", "IMPROVING", "SOLVED"] as const;
 
@@ -127,7 +128,7 @@ function ProblemForm({ problem, onDone }: { problem: ProblemView | null; onDone:
   }, [state.ok, onDone]);
 
   return (
-    <form action={formAction} className={forms.form}>
+    <form onSubmit={submitWith(formAction)} className={forms.form}>
       <label className={forms.field}>
         <span>What is the problem?</span>
         <input name="title" autoFocus defaultValue={val("title", problem?.title ?? "")} aria-invalid={!!err.title} />
@@ -177,7 +178,7 @@ function OccurrenceForm({ problem, onDone }: { problem: ProblemView; onDone: () 
   }, [state.ok, onDone]);
 
   return (
-    <form action={formAction} className={forms.form}>
+    <form onSubmit={submitWith(formAction)} className={forms.form}>
       <label className={forms.field}>
         <span>Note (optional)</span>
         <input name="note" autoFocus defaultValue={state.values?.note ?? ""} aria-invalid={!!err.note} />

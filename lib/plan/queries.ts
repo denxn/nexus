@@ -4,8 +4,9 @@ import { addDays, dayKey, monthMatrix } from "@/lib/time";
 import { goalProgress } from "./goalProgress";
 import { sortCompleted } from "./todoOrder";
 import { notePreview } from "@/lib/notes/preview";
+import { eventRuleOf, expandEvent } from "@/lib/recurrence/events";
 import { buildMarkers, summarizeDay } from "./calendar";
-import type { DayAgendaData, GoalView, ProblemView, TodoView } from "./types";
+import type { DayAgendaData, EventView, GoalView, ProblemView, TodoView } from "./types";
 
 export async function getGoals(): Promise<GoalView[]> {
   const goals = await prisma.goal.findMany({ orderBy: { createdAt: "desc" } });
@@ -126,8 +127,12 @@ export async function getCalendarData(month: string, day: string) {
   const from = new Date(`${addDays(first, -1)}T00:00:00Z`);
   const to = new Date(`${addDays(last, 2)}T00:00:00Z`);
 
-  const [events, todos, entries, notes] = await Promise.all([
-    prisma.event.findMany({ where: { startsAt: { gte: from, lt: to } }, orderBy: { startsAt: "asc" } }),
+  const [oneOffs, series, todos, entries, notes] = await Promise.all([
+    // One-off events only: a recurring series is expanded below (its stored first row must not also appear here).
+    prisma.event.findMany({ where: { repeat: "NONE", startsAt: { gte: from, lt: to } }, orderBy: { startsAt: "asc" } }),
+    prisma.event.findMany({
+      where: { repeat: { not: "NONE" }, startsAt: { lt: to }, OR: [{ repeatUntil: null }, { repeatUntil: { gte: first } }] },
+    }),
     prisma.todo.findMany({ where: { dueDate: { gte: first, lte: last } }, orderBy: { createdAt: "asc" } }),
     prisma.entry.findMany({
       where: { occurredAt: { gte: from, lt: to } },
@@ -143,18 +148,31 @@ export async function getCalendarData(month: string, day: string) {
     const k = dayKey(d);
     return k >= first && k <= last;
   };
-  const evs = events.filter((e) => inRange(e.startsAt));
+  const toView = (row: (typeof oneOffs)[number], o: { day: string; startsAt: Date; endsAt: Date | null }): EventView => ({
+    id: row.id,
+    title: row.title,
+    startsAt: o.startsAt.toISOString(),
+    endsAt: o.endsAt?.toISOString() ?? null,
+    day: o.day,
+    recurring: row.repeat !== "NONE",
+    series: {
+      startsAt: row.startsAt.toISOString(),
+      endsAt: row.endsAt?.toISOString() ?? null,
+      repeat: row.repeat,
+      repeatInterval: row.repeatInterval,
+      repeatWeekdays: row.repeatWeekdays,
+      repeatUntil: row.repeatUntil,
+      remindMinutes: row.remindMinutes,
+    },
+  });
+  const occurrences = [
+    ...oneOffs.filter((e) => inRange(e.startsAt)).map((row) => ({ row, day: dayKey(row.startsAt), startsAt: row.startsAt, endsAt: row.endsAt })),
+    ...series.flatMap((row) => expandEvent(eventRuleOf(row), first, last).map((o) => ({ row, ...o }))),
+  ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
   const ents = entries.filter((e) => inRange(e.occurredAt));
 
   const agenda: DayAgendaData = {
-    events: evs
-      .filter((e) => dayKey(e.startsAt) === day)
-      .map((e) => ({
-        id: e.id,
-        title: e.title,
-        startsAt: e.startsAt.toISOString(),
-        endsAt: e.endsAt?.toISOString() ?? null,
-      })),
+    events: occurrences.filter((o) => o.day === day).map((o) => toView(o.row, o)),
     todos: todos
       .filter((t) => t.dueDate === day)
       .map((t) => ({ id: t.id, title: t.title, done: t.done, priority: t.priority })),
@@ -163,5 +181,5 @@ export async function getCalendarData(month: string, day: string) {
       .filter((n) => n.day === day)
       .map((n) => ({ id: n.id, title: n.title, preview: notePreview(n.body) })),
   };
-  return { markers: buildMarkers(days, evs, todos, ents, notes), agenda };
+  return { markers: buildMarkers(days, occurrences, todos, ents, notes), agenda };
 }

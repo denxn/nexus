@@ -6,6 +6,7 @@ import { parseId, parseWith, readForm } from "@/lib/action-helpers";
 import { prisma } from "@/lib/db";
 import { withSaveErrors } from "@/lib/entries/save";
 import { eventSchema } from "@/lib/plan/schemas";
+import { addSkippedDay } from "@/lib/recurrence/skip";
 import { requireSession } from "@/lib/require-session";
 import { isDayKey } from "@/lib/time";
 
@@ -60,9 +61,6 @@ export async function skipEventDay(id: string, day: string): Promise<void> {
   await requireSession();
   const eventId = parseId(id);
   if (!isDayKey(day)) throw new Error("Invalid day");
-  await prisma.event.updateMany({
-    where: { id: eventId, repeat: { not: "NONE" }, NOT: { skippedDays: { has: day } } },
-    data: { skippedDays: { push: day } },
-  });
+  await addSkippedDay(eventId, day);
   revalidate();
 }

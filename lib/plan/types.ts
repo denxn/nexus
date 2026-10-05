@@ -45,8 +45,20 @@ export type TodoView = {
 export type EventView = {
   id: string;
   title: string;
-  startsAt: string; // ISO
-  endsAt: string | null; // ISO
+  startsAt: string; // ISO, this occurrence
+  endsAt: string | null; // ISO, this occurrence
+  day: string; // Rome day of this occurrence
+  recurring: boolean;
+  // The stored series (equal to the occurrence for a one-off event); the edit form works on this.
+  series: {
+    startsAt: string;
+    endsAt: string | null;
+    repeat: "NONE" | "DAILY" | "WEEKLY" | "MONTHLY";
+    repeatInterval: number;
+    repeatWeekdays: number[];
+    repeatUntil: string | null;
+    remindMinutes: number | null;
+  };
 };
 
 export type DayAgendaData = {

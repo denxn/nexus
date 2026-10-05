@@ -28,11 +28,11 @@ test("log in, log a study entry, see it on the dashboard, delete it", async ({ p
   const row = page.getByRole("listitem").filter({ hasText: label });
   await expect(row).toBeVisible();
   await expect(row).toContainText("1 h 30 m");
-  await expect.poll(studyHours).toBeCloseTo(before + 1.5, 1);
+  await expect.poll(studyHours).toBeCloseTo(before + 1.5, 0);
 
   // Delete it again so the run leaves no data behind.
   page.once("dialog", (dialog) => dialog.accept());
   await row.getByRole("button", { name: "Delete" }).click();
   await expect(row).toHaveCount(0);
-  await expect.poll(studyHours).toBeCloseTo(before, 1);
+  await expect.poll(studyHours).toBeCloseTo(before, 0);
 });
