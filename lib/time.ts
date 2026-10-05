@@ -138,3 +138,8 @@ export function parseDay(v: string | string[] | undefined): string | null {
   const raw = first(v);
   return raw && isDayKey(raw) ? raw : null;
 }
+
+/** Whole days from `a` to `b` (negative when b is earlier), both "YYYY-MM-DD". */
+export function daysBetween(a: string, b: string): number {
+  return Math.round((parseKey(b).getTime() - parseKey(a).getTime()) / 86_400_000);
+}

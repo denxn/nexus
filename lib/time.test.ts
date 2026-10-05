@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   addDays,
   addMonths,
+  daysBetween,
   dayKey,
   isDayKey,
   monthKeyOf,
@@ -155,5 +156,14 @@ describe("month helpers", () => {
   test("the grid for the last supported month does not throw", () => {
     expect(() => monthMatrix("2100-12")).not.toThrow();
     expect(addMonths("2100-12", 1)).toBe("2101-01");
+  });
+
+  test("daysBetween counts whole days between day keys", () => {
+    expect(daysBetween("2026-10-01", "2026-10-04")).toBe(3);
+    expect(daysBetween("2026-10-04", "2026-10-04")).toBe(0);
+    expect(daysBetween("2026-10-04", "2026-10-01")).toBe(-3);
+    expect(daysBetween("2026-12-30", "2027-01-02")).toBe(3);
+    expect(daysBetween("2028-02-28", "2028-03-01")).toBe(2);
+    expect(daysBetween("2026-10-24", "2026-10-26")).toBe(2); // across the DST change
   });
 });
