@@ -6,9 +6,9 @@ const DAYS = ["2026-10-03", "2026-10-04", "2026-10-05"];
 describe("buildMarkers", () => {
   test("every requested day gets an entry, all false by default", () => {
     expect(buildMarkers(DAYS, [], [], [])).toEqual({
-      "2026-10-03": { event: false, todo: false, logged: false },
-      "2026-10-04": { event: false, todo: false, logged: false },
-      "2026-10-05": { event: false, todo: false, logged: false },
+      "2026-10-03": { event: false, todo: false, logged: false, note: false },
+      "2026-10-04": { event: false, todo: false, logged: false, note: false },
+      "2026-10-05": { event: false, todo: false, logged: false, note: false },
     });
   });
 
@@ -43,6 +43,28 @@ describe("buildMarkers", () => {
   test("items outside the requested days are ignored", () => {
     const m = buildMarkers(DAYS, [{ startsAt: new Date("2026-11-01T10:00:00Z") }], [{ dueDate: "2026-11-01", done: false }], []);
     expect(Object.values(m).every((d) => !d.event && !d.todo)).toBe(true);
+  });
+});
+
+describe("buildMarkers with notes", () => {
+  test("a note marks its day", () => {
+    const m = buildMarkers(DAYS, [], [], [], [{ day: "2026-10-04" }]);
+    expect(m["2026-10-04"].note).toBe(true);
+    expect(m["2026-10-03"].note).toBe(false);
+  });
+
+  test("several notes on one day mark it once", () => {
+    const m = buildMarkers(DAYS, [], [], [], [{ day: "2026-10-04" }, { day: "2026-10-04" }]);
+    expect(m["2026-10-04"].note).toBe(true);
+  });
+
+  test("notes outside the requested days are ignored", () => {
+    const m = buildMarkers(DAYS, [], [], [], [{ day: "2026-11-01" }]);
+    expect(Object.values(m).every((d) => !d.note)).toBe(true);
+  });
+
+  test("omitting the notes argument leaves every note flag false", () => {
+    expect(Object.values(buildMarkers(DAYS, [], [], [])).every((d) => d.note === false)).toBe(true);
   });
 });
 

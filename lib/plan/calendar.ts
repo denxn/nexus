@@ -2,18 +2,23 @@ import { formatEntryValue } from "@/lib/format";
 import type { EntryLike } from "@/lib/stats";
 import { dayKey } from "@/lib/time";
 
-export type DayMarkers = { event: boolean; todo: boolean; logged: boolean };
+export type DayMarkers = { event: boolean; todo: boolean; logged: boolean; note: boolean };
 
-/** Which of the given Rome days have an event, an open todo due, or any logged entry. */
+/** Which of the given Rome days have an event, an open todo due, any logged entry, or a note. */
 export function buildMarkers(
   days: string[],
   events: { startsAt: Date }[],
   todos: { dueDate: string | null; done: boolean }[],
   entries: { occurredAt: Date }[],
+  notes: { day: string }[] = [],
 ): Record<string, DayMarkers> {
   const markers: Record<string, DayMarkers> = Object.fromEntries(
-    days.map((d) => [d, { event: false, todo: false, logged: false }]),
+    days.map((d) => [d, { event: false, todo: false, logged: false, note: false }]),
   );
+  for (const n of notes) {
+    const m = markers[n.day];
+    if (m) m.note = true;
+  }
   for (const e of events) {
     const m = markers[dayKey(e.startsAt)];
     if (m) m.event = true;
