@@ -52,8 +52,9 @@ test("plan a goal, a to-do and an event, see them on the dashboard, then clean u
   await page.goto("/");
   // exact: the Daily brief may also mention the goal ("... is due today at 33%").
   await expect(page.getByText(goal, { exact: true })).toBeVisible();
-  await expect(page.getByText(event)).toBeVisible();
-  await expect(page.getByText(todo)).toBeVisible();
+  // The event appears in the Today card and in the mini calendar's agenda.
+  await expect(page.getByText(event).first()).toBeVisible();
+  await expect(page.getByText(todo).first()).toBeVisible();
 
   // Clean up so the run leaves no data behind.
   await page.goto("/calendar");
