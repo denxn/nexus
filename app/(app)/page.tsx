@@ -1,13 +1,18 @@
+import { BriefCard } from "@/components/BriefCard";
 import { GoalsCard } from "@/components/GoalsCard";
 import { LifeTimeline } from "@/components/LifeTimeline";
 import { MiniCalendar } from "@/components/MiniCalendar";
 import { RecentActivity } from "@/components/RecentActivity";
+import { ScoreCard } from "@/components/ScoreCard";
 import { StatCard } from "@/components/StatCard";
 import { WeekGridCard } from "@/components/WeekGridCard";
 import dash from "@/components/dashboard.module.css";
+import insights from "@/components/insights.module.css";
 import { getRecentEntries } from "@/lib/entries/queries";
 import { formatHours, formatKcal } from "@/lib/format";
 import { getDailyStats, summarizeCards } from "@/lib/stats";
+import { parseCorrelationParams, parsePerf } from "@/lib/insights/params";
+import { getInsightData } from "@/lib/insights/queries";
 import { getCalendarData, getGoals } from "@/lib/plan/queries";
 import { weekGrid } from "@/lib/plan/weekGrid";
 import { parseRange } from "@/lib/range";
@@ -34,16 +39,26 @@ function greeting(): string {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[] }>;
+  searchParams: Promise<{
+    range?: string | string[];
+    perf?: string | string[];
+    cx?: string | string[];
+    cy?: string | string[];
+    lag?: string | string[];
+  }>;
 }) {
-  const range = parseRange((await searchParams).range);
+  const params = await searchParams;
+  const range = parseRange(params.range);
+  const perf = parsePerf(params.perf);
+  const correlation = parseCorrelationParams(params);
   const today = dayKey(new Date());
-  const [stats, targets, recent, goals, calendar] = await Promise.all([
+  const [stats, targets, recent, goals, calendar, insight] = await Promise.all([
     getDailyStats(range),
     getTargets(),
     getRecentEntries(8),
     getGoals(),
     getCalendarData(monthKeyOf(today), today),
+    getInsightData({ perf, correlation, greeting: "Status report" }),
   ]);
   const cards = summarizeCards(stats, targets);
   const series = toTimelineSeries(stats, targets);
@@ -54,6 +69,11 @@ export default async function DashboardPage({
         <h1 className={styles.h1}>{greeting()}, Dennis.</h1>
         <p className={styles.tag}>Progress today. A stronger tomorrow.</p>
       </header>
+
+      <div className={insights.top}>
+        <BriefCard brief={insight.brief} />
+        <ScoreCard score={insight.score} parts={insight.parts} streak={insight.streak} />
+      </div>
 
       <div className={styles.cards}>
         <StatCard
