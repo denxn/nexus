@@ -27,7 +27,7 @@ export function TodayTodos({ items }: { items: Item[] }) {
           {t.overdueSince && <span className={styles.overdue}>overdue since {short(t.overdueSince)}</span>}
           {t.recurring && !t.done && <span className={styles.state}>↻</span>}
           {t.recurring && !t.done && (
-            <button type="button" className={styles.skip} disabled={pending} onClick={() => startTransition(() => skipTodo(t.id))}>
+            <button type="button" className={styles.skip} aria-label={`Skip ${t.title}`} disabled={pending} onClick={() => startTransition(() => skipTodo(t.id))}>
               Skip
             </button>
           )}

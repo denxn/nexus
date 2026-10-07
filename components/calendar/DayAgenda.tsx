@@ -88,7 +88,7 @@ export function DayAgenda({ day, agenda }: { day: string; agenda: DayAgendaData 
               aria-label={`${t.done ? "Reopen" : "Complete"} ${t.title}`}
               onChange={(ev) => startTransition(() => toggleTodo(t.id, ev.target.checked))}
             />
-            <span className={`${styles.title} ${t.done ? styles.struck : ""}`}>{t.title} <small className={styles.muted}>to-do</small></span>
+            <span className={`${styles.title} ${t.done ? styles.struck : ""}`}>{t.title} <small className={styles.muted}>{t.recurring ? "↻ repeating to-do" : "to-do"}</small></span>
           </li>
         ))}
       </ul>

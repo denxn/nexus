@@ -37,6 +37,13 @@ function writeStored(entries: Stored[]) {
 export function ReminderScheduler({ tasks }: { tasks: ReminderTask[] }) {
   const [toasts, setToasts] = useState<{ key: string; title: string; startsAt: number }[]>([]);
   const timers = useRef<number[]>([]);
+  const toastTimers = useRef<number[]>([]);
+
+  // Dismiss timers must survive re-renders that re-run the scheduling effect below.
+  useEffect(() => {
+    const active = toastTimers.current;
+    return () => active.forEach((id) => window.clearTimeout(id));
+  }, []);
 
   useEffect(() => {
     const now = Date.now();
@@ -44,12 +51,13 @@ export function ReminderScheduler({ tasks }: { tasks: ReminderTask[] }) {
     const reminded = new Set(stored.map((s) => s.key));
 
     const fire = (t: ReminderTask) => {
-      if (reminded.has(t.key)) return; // another timer or tab got there first
+      if (reminded.has(t.key)) return; // another timer got there first
+      if (t.startsAt < Date.now()) return; // woke from sleep after the event began
       reminded.add(t.key);
       stored = [...stored, { key: t.key, at: Date.now() }];
       writeStored(stored);
       setToasts((cur) => (cur.some((c) => c.key === t.key) ? cur : [...cur, { key: t.key, title: t.title, startsAt: t.startsAt }]));
-      timers.current.push(window.setTimeout(() => setToasts((cur) => cur.filter((c) => c.key !== t.key)), TOAST_MS));
+      toastTimers.current.push(window.setTimeout(() => setToasts((cur) => cur.filter((c) => c.key !== t.key)), TOAST_MS));
       showSystemNotice(typeof Notification === "undefined" ? undefined : Notification, t.title, `Starts at ${clock.format(new Date(t.startsAt))}`, t.key);
     };
 

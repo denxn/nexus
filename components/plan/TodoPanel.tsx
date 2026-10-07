@@ -68,7 +68,7 @@ export function TodoPanel({
       <span className={styles.btns}>
         <button type="button" onClick={() => setEditing(t)}>Edit</button>
         {t.repeat !== "NONE" && !t.done && (
-          <button type="button" disabled={pending} onClick={() => startTransition(() => skipTodo(t.id))}>Skip</button>
+          <button type="button" aria-label={`Skip ${t.title}`} disabled={pending} onClick={() => startTransition(() => skipTodo(t.id))}>Skip</button>
         )}
         <button
           type="button"

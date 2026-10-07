@@ -145,3 +145,10 @@ describe("keepMonthDay", () => {
     expect(keepMonthDay(10, "2026-03-12")).toBe(12);
   });
 });
+
+describe("nextOccurrence limits", () => {
+  test("never returns a day past the 2100 day-key bound", () => {
+    expect(nextOccurrence(rule(), "2100-12-30", "2100-12-31")).toBeNull();
+    expect(nextOccurrence(rule(), "2100-12-30", "2100-12-30")).toBe("2100-12-31");
+  });
+});

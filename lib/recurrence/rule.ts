@@ -75,9 +75,13 @@ export function expandOccurrences(rule: Rule, anchor: string, from: string, to: 
   return out;
 }
 
+/** Day keys are valid only up to this day (see isDayKey). */
+const LAST_DAY = "2100-12-31";
+
 /** The first occurrence strictly after `after` (searching up to about ten years ahead), or null. */
 export function nextOccurrence(rule: Rule, anchor: string, after: string, skipped: string[] = []): string | null {
   const limit = addDays(after, SEARCH_DAYS);
   const end = rule.until && rule.until < limit ? rule.until : limit;
-  return expandOccurrences(rule, anchor, addDays(after, 1), end, skipped)[0] ?? null;
+  const next = expandOccurrences(rule, anchor, addDays(after, 1), end, skipped)[0] ?? null;
+  return next && next <= LAST_DAY ? next : null;
 }
